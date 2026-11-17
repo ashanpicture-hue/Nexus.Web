@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>@(ViewData["Title"] == null ? "Nexus" : ViewData["Title"] + " · Nexus")</title>
+    <link rel="preload" href="~/fonts/barlow-latin-500-normal.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body>
+<a class="skip-link" href="#content">Skip to content</a>
+<div class="pub">
+    <header class="pub-nav">
+        <div class="inner">
+            <a class="brand" asp-controller="Home" asp-action="Index">
+                <svg width="26" height="26" viewBox="0 0 26 26" fill="none" aria-hidden="true"><circle cx="5" cy="13" r="3.2" fill="currentColor"/><circle cx="21" cy="13" r="3.2" fill="currentColor"/><path d="M8.2 13h9.6" stroke="currentColor" stroke-width="2"/></svg>
+                <span>Nexus</span>
+            </a>
+            <nav aria-label="Main">
+                <a asp-controller="Home" asp-action="Plans" class="@(ViewContext.RouteData.Values["action"]?.ToString() == "Plans" ? "is-on" : "")">Plans</a>
+                <a asp-controller="Track" asp-action="Index" class="@(ViewContext.RouteData.Values["controller"]?.ToString() == "Track" ? "is-on" : "")">Track an order</a>
+            </nav>
+            <span class="spacer"></span>
+            <div class="actions">
+                <a asp-controller="Account" asp-action="Login">Sign in</a>
+                <a class="btn btn-primary btn-sm" asp-controller="Account" asp-action="Register">Apply for a connection</a>
+            </div>
+        </div>
+    </header>
+    <partial name="_Flash" />
+    <main id="content" class="pub-main">@RenderBody()</main>
+    <footer class="pub-footer">
+        <div class="wrap">
+            <span>Nexus Communication System</span>
+            <span>Questions about an order or a bill: visit any Nexus retail shop</span>
+        </div>
+    </footer>
+</div>
+<script src="~/lib/bootstrap/bootstrap.bundle.min.js"></script>
+<script src="~/js/site.js" asp-append-version="true"></script>
+</body>
+</html>

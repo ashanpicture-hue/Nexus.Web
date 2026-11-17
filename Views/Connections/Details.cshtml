@@ -1,0 +1,189 @@
+@model Connection
+@{
+    ViewData["Title"] = "Connection " + Model.AccountId;
+    var isTech = User.IsInRole(Roles.Technical);
+    var isAcct = User.IsInRole(Roles.Accounts);
+    var due = (decimal)ViewBag.Due;
+    var plans = ViewBag.Plans as List<Plan> ?? new List<Plan>();
+    var products = ViewBag.Products as List<Product> ?? new List<Product>();
+    var open = Model.Status != ConnectionStatus.PermanentlyInactive;
+    var lastBill = Model.Bills.OrderByDescending(b => b.PeriodEnd).FirstOrDefault();
+}
+<a class="back-link" asp-action="Index">@Ui.Icon("arrow-left", 14) Connections</a>
+<div class="page-head">
+    <div>
+        <div class="mb-2">@Ui.Id(Model.AccountId)</div>
+        <h1 class="page-title">@Model.ConnectionType.Label() connection</h1>
+        <p class="page-sub">@Model.Customer.FullName · @Model.Plan.Name · @Ui.Status(Model.Status)</p>
+    </div>
+    <div class="page-actions">
+        @if (isAcct && open) { <a class="btn btn-primary" asp-controller="Billing" asp-action="Generate" asp-route-connectionId="@Model.Id">Generate bill</a> }
+        @if ((User.IsInRole(Roles.Retail) || isAcct) && due > 0) { <a class="btn btn-quiet" asp-controller="Payments" asp-action="Find" asp-route-accountId="@Model.AccountId">Take payment</a> }
+    </div>
+</div>
+
+<div class="stats">
+    <div class="stat @(due > 0 && lastBill != null && Model.Bills.Any(b => !b.CarriedForward && b.Due > 0 && b.DueDate < DateTime.Today) ? "is-alert" : "")"><span class="figure">@Fmt.Money(due)</span><span class="label">Amount due</span></div>
+    <div class="stat"><span class="figure">@Fmt.Money(Model.SecurityDeposit)</span><span class="label">Security deposit held@(Model.DiscountPercent > 0 ? ", after " + Fmt.Percent(Model.DiscountPercent) + " discount" : "")</span></div>
+    <div class="stat"><span class="figure">@Fmt.Date(Model.ActivatedOn)</span><span class="label">Connected</span></div>
+</div>
+
+@if (Model.Status == ConnectionStatus.PermanentlyInactive && Model.DepositRefundAmount != null)
+{
+    <div class="note @(Model.DepositRefundedOn == null ? "is-warn" : "is-ok") mb-4">
+        Deposit refund of <strong class="mono">@Fmt.Money(Model.DepositRefundAmount.Value)</strong>
+        @if (Model.DepositRefundedOn != null) { <text>was paid on @Fmt.Date(Model.DepositRefundedOn).</text> }
+        else
+        {
+            <text>is due to the customer, after any unpaid balance.</text>
+            @if (isAcct)
+            {
+                <form asp-action="Refund" asp-route-id="@Model.Id" method="post" class="mt-2">
+                    <button class="btn btn-quiet btn-sm" type="button" data-confirm="Record that @Fmt.Money(Model.DepositRefundAmount.Value) was returned to @Model.Customer.FullName?" data-confirm-title="Record refund" data-confirm-verb="Record refund">Record refund paid</button>
+                </form>
+            }
+        }
+    </div>
+}
+
+<div class="row g-4">
+    <div class="col-xl-7">
+        <div class="panel">
+            <div class="panel-head"><h2>Details</h2></div>
+            <div class="panel-body">
+                <dl class="kv kv-tight">
+                    <dt>Customer</dt><dd>@if (!User.IsInRole(Roles.Customer)) { <a asp-controller="Customers" asp-action="Details" asp-route-id="@Model.CustomerId">@Model.Customer.FullName</a> } else { @Model.Customer.FullName }</dd>
+                    <dt>Plan</dt><dd>@Model.Plan.Name, @Fmt.Money(Model.Plan.Price) every @(Model.Plan.ValidityMonths == 1 ? "month" : Model.Plan.ValidityMonths + " months")</dd>
+                    <dt>Installed at</dt><dd>@Model.InstallAddress, @Model.City.Name</dd>
+                    <dt>From order</dt><dd>@Ui.Id(Model.ServiceOrder.OrderNo)</dd>
+                    @if (!string.IsNullOrEmpty(Model.LinkedLandlineAccountId)) { <dt>Runs on landline</dt><dd>@Ui.Id(Model.LinkedLandlineAccountId)</dd> }
+                    @if (!string.IsNullOrEmpty(Model.StatusReason)) { <dt>Status note</dt><dd>@Model.StatusReason</dd> }
+                </dl>
+            </div>
+        </div>
+
+        <div class="panel">
+            <div class="panel-head"><h2>Equipment provided</h2></div>
+            @if (!Model.Equipment.Any()) { <div class="empty">No equipment was issued with this connection.</div> }
+            else
+            {
+                <div class="table-wrap"><table class="table">
+                    <thead><tr><th>Item</th><th>Serial</th><th>Issued</th><th>Returned</th></tr></thead>
+                    <tbody>
+                    @foreach (var e in Model.Equipment.OrderBy(e => e.IssuedOn))
+                    {
+                        <tr><td>@e.Product.Name<div class="muted small">@e.Product.Category.Label()</div></td><td class="mono">@(e.SerialNo ?? "none")</td><td>@Fmt.Date(e.IssuedOn)</td><td>@(e.ReturnedOn == null ? "In use" : Fmt.Date(e.ReturnedOn))</td></tr>
+                    }
+                    </tbody></table></div>
+            }
+        </div>
+
+        <div class="panel">
+            <div class="panel-head"><h2>Bills</h2></div>
+            @if (!Model.Bills.Any()) { <div class="empty"><strong>No bill yet</strong>The accounts department generates the first bill.</div> }
+            else
+            {
+                <div class="table-wrap"><table class="table">
+                    <thead><tr><th>Bill</th><th>Period</th><th class="num">Total</th><th class="num">Due</th><th>Status</th><th></th></tr></thead>
+                    <tbody>
+                    @foreach (var b in Model.Bills.OrderByDescending(b => b.PeriodStart))
+                    {
+                        <tr class="@(!b.CarriedForward && b.Due > 0 && b.DueDate < DateTime.Today ? "is-overdue" : "")">
+                            <td>@b.BillNo</td><td>@Fmt.Date(b.PeriodStart) to @Fmt.Date(b.PeriodEnd)</td>
+                            <td class="num">@Fmt.Money(b.Total)</td>
+                            <td class="num">@(b.CarriedForward ? "carried" : Fmt.Money(b.Due))</td>
+                            <td>@Ui.Status(b.Status)</td>
+                            <td class="row-actions"><a asp-controller="Billing" asp-action="Details" asp-route-id="@b.Id">Open</a></td>
+                        </tr>
+                    }
+                    </tbody></table></div>
+            }
+        </div>
+    </div>
+
+    <div class="col-xl-5">
+        <div class="panel">
+            <div class="panel-head"><h2>History</h2></div>
+            <div class="panel-body">
+                <ul class="timeline">
+                    @foreach (var e in Model.Events.OrderByDescending(x => x.At))
+                    {
+                        <li><strong>@e.Event</strong>@if (!string.IsNullOrEmpty(e.Detail)) { <div class="muted">@e.Detail</div> }<span class="when">@Fmt.DateTimeText(e.At)</span></li>
+                    }
+                </ul>
+            </div>
+        </div>
+
+        @if (Model.Charges.Any(c => c.BilledOnBillId == null))
+        {
+            <div class="note is-warn mb-4">
+                <strong>Waiting for the next bill</strong>
+                @foreach (var c in Model.Charges.Where(c => c.BilledOnBillId == null)) { <div>@c.Description, <span class="mono">@Fmt.Money(c.Amount)</span></div> }
+            </div>
+        }
+
+        @if (isTech && open)
+        {
+            <div class="panel">
+                <div class="panel-head"><h2>Status</h2></div>
+                <div class="panel-body">
+                    @if (Model.Status == ConnectionStatus.Active)
+                    {
+                        <form asp-action="Status" method="post" class="mb-3">
+                            <input type="hidden" name="Id" value="@Model.Id" />
+                            <label class="form-label" for="reason-temp">Reason</label>
+                            <input class="form-control mb-2" id="reason-temp" name="Reason" maxlength="200" placeholder="For example, unpaid bill or customer request" />
+                            <button class="btn btn-quiet btn-sm" type="submit" name="Target" value="2">Suspend temporarily</button>
+                        </form>
+                    }
+                    else
+                    {
+                        <form asp-action="Status" method="post" class="mb-3">
+                            <input type="hidden" name="Id" value="@Model.Id" />
+                            <button class="btn btn-primary btn-sm" type="submit" name="Target" value="1">Reactivate</button>
+                        </form>
+                    }
+                    <form asp-action="Status" method="post">
+                        <input type="hidden" name="Id" value="@Model.Id" /><input type="hidden" name="Target" value="3" />
+                        <label class="form-label" for="reason-perm">Close permanently</label>
+                        <input class="form-control mb-2" id="reason-perm" name="Reason" maxlength="200" placeholder="Reason" />
+                        <button class="btn btn-danger-quiet btn-sm" type="button" data-confirm="@Model.AccountId will be closed for good. Its deposit refund is worked out after any unpaid balance. This cannot be undone." data-confirm-title="Close this connection?" data-confirm-verb="Close connection">Close connection</button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="panel-head"><h2>Change plan</h2></div>
+                <div class="panel-body">
+                    <form asp-action="ChangePlan" method="post">
+                        <input type="hidden" name="Id" value="@Model.Id" />
+                        <select class="form-select mb-2" name="PlanId" aria-label="New plan">
+                            <option value="">Choose a plan</option>
+                            @foreach (var p in plans) { <option value="@p.Id">@p.Name, @Fmt.Money(p.Price)</option> }
+                        </select>
+                        <button class="btn btn-quiet btn-sm" type="submit">Change plan</button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="panel-head"><h2>Replace equipment</h2></div>
+                <div class="panel-body">
+                    <form asp-action="Replace" method="post">
+                        <input type="hidden" name="Id" value="@Model.Id" />
+                        <select class="form-select mb-2" name="ProductId" aria-label="Replacement">
+                            @foreach (var p in products.Where(p => OrderService.ProductFits(Model.ConnectionType, p.Category))) { <option value="@p.Id">@p.Name (@p.StockQty in stock)</option> }
+                        </select>
+                        <input class="form-control mono mb-2" name="Serial" placeholder="Serial number" maxlength="60" />
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" id="dmg" name="DamagedByCustomer" value="true" />
+                            <input type="hidden" name="DamagedByCustomer" value="false" />
+                            <label class="form-check-label" for="dmg">Damaged by the customer, charge it</label>
+                        </div>
+                        <button class="btn btn-quiet btn-sm" type="submit">Replace</button>
+                    </form>
+                </div>
+            </div>
+        }
+    </div>
+</div>

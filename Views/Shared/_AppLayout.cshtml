@@ -1,0 +1,124 @@
+@{
+    var role = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value;
+    var ctl = ViewContext.RouteData.Values["controller"]?.ToString();
+    var act = ViewContext.RouteData.Values["action"]?.ToString();
+
+    // Navigation per role: (group, icon, label, controller, action)
+    var items = new List<(string Group, string Icon, string Label, string Ctl, string Act)>();
+    items.Add(("", "layout-dashboard", "Overview", "Dashboard", "Index"));
+    switch (role)
+    {
+        case Roles.Admin:
+            items.Add(("Work", "clipboard-list", "Orders", "Orders", "Index"));
+            items.Add(("Work", "cable", "Connections", "Connections", "Index"));
+            items.Add(("Work", "receipt", "Bills", "Billing", "Index"));
+            items.Add(("Work", "wallet", "Payments", "Payments", "Index"));
+            items.Add(("Work", "users", "Customers", "Customers", "Index"));
+            items.Add(("Work", "search", "Search", "Search", "Index"));
+            items.Add(("Catalogue", "tag", "Plans", "Plans", "Index"));
+            items.Add(("Catalogue", "router", "Equipment and stock", "Products", "Index"));
+            items.Add(("Catalogue", "shopping-cart", "Purchase orders", "Purchasing", "Index"));
+            items.Add(("Catalogue", "truck", "Vendors", "Vendors", "Index"));
+            items.Add(("Organisation", "key-round", "Employees", "Employees", "Index"));
+            items.Add(("Organisation", "store", "Retail shops", "Shops", "Index"));
+            items.Add(("Organisation", "map-pin", "Cities", "Cities", "Index"));
+            items.Add(("Organisation", "percent", "Rates and settings", "Rates", "Index"));
+            items.Add(("Organisation", "message-square", "Feedback", "Feedback", "Index"));
+            break;
+        case Roles.Technical:
+            items.Add(("Work", "clipboard-list", "Orders", "Orders", "Index"));
+            items.Add(("Work", "cable", "Connections", "Connections", "Index"));
+            items.Add(("Work", "router", "Equipment and stock", "Products", "Index"));
+            items.Add(("Work", "search", "Search", "Search", "Index"));
+            break;
+        case Roles.Accounts:
+            items.Add(("Work", "receipt", "Bills to generate", "Billing", "Pending"));
+            items.Add(("Work", "receipt", "All bills", "Billing", "Index"));
+            items.Add(("Work", "wallet", "Payments", "Payments", "Index"));
+            items.Add(("Work", "cable", "Connections", "Connections", "Index"));
+            items.Add(("Work", "users", "Customers", "Customers", "Index"));
+            items.Add(("Work", "search", "Search", "Search", "Index"));
+            break;
+        case Roles.Retail:
+            items.Add(("Work", "plus", "New order", "Customers", "Pick"));
+            items.Add(("Work", "clipboard-list", "Orders", "Orders", "Index"));
+            items.Add(("Work", "cable", "Connections", "Connections", "Index"));
+            items.Add(("Work", "receipt", "Bills", "Billing", "Index"));
+            items.Add(("Work", "wallet", "Payments", "Payments", "Index"));
+            items.Add(("Work", "search", "Search", "Search", "Index"));
+            break;
+        default:
+            items.Add(("My account", "plus", "Apply for a connection", "Orders", "Apply"));
+            items.Add(("My account", "clipboard-list", "My orders", "Orders", "Index"));
+            items.Add(("My account", "cable", "My connections", "Connections", "Index"));
+            items.Add(("My account", "receipt", "My bills", "Billing", "Index"));
+            items.Add(("My account", "wallet", "My payments", "Payments", "Index"));
+            items.Add(("My account", "search", "Search", "Search", "Index"));
+            items.Add(("My account", "message-square", "Send feedback", "Feedback", "Create"));
+            items.Add(("My account", "user", "Contact details", "Customers", "Profile"));
+            break;
+    }
+    // Highlight the exact page if there is one, otherwise the first entry of the same section.
+    var selected = items.FindIndex(i => i.Ctl == ctl && i.Act == act);
+    if (selected < 0) selected = items.FindIndex(i => i.Ctl == ctl);
+    var name = User.Identity?.Name;
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>@(ViewData["Title"] == null ? "Nexus" : ViewData["Title"] + " · Nexus")</title>
+    <link rel="preload" href="~/fonts/barlow-latin-500-normal.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body>
+<a class="skip-link" href="#content">Skip to content</a>
+<div class="app">
+    <aside class="sidebar" id="sidebar" aria-label="Main">
+        <a class="brand" asp-controller="Dashboard" asp-action="Index">
+            <svg width="26" height="26" viewBox="0 0 26 26" fill="none" aria-hidden="true"><circle cx="5" cy="13" r="3.2" fill="currentColor"/><circle cx="21" cy="13" r="3.2" fill="currentColor"/><path d="M8.2 13h9.6" stroke="currentColor" stroke-width="2"/></svg>
+            <span>Nexus<span class="brand-sub">Service marketing</span></span>
+        </a>
+        <form id="side-find" class="side-find" asp-controller="Track" asp-action="Index" method="get" role="search">
+            @Ui.Icon("search", 15)
+            <input type="text" name="id" placeholder="Find by id" autocomplete="off" spellcheck="false" aria-label="Find by order id or account id" />
+        </form>
+        @for (var g = 0; g < items.Count; g++)
+        {
+            var groupName = items[g].Group;
+            if (g > 0 && items[g - 1].Group == groupName) { continue; }
+            <div class="nav-group">
+                @if (groupName != "") { <div class="nav-label">@groupName</div> }
+                @for (var i = g; i < items.Count && items[i].Group == groupName; i++)
+                {
+                    var it = items[i];
+                    <a class="nav-item @(i == selected ? "is-on" : "")" asp-controller="@it.Ctl" asp-action="@it.Act" aria-current="@(i == selected ? "page" : null)">
+                        @Ui.Icon(it.Icon)<span>@it.Label</span>
+                    </a>
+                }
+            </div>
+        }
+        <div class="side-foot">
+            <div class="who"><strong>@name</strong><span>@(role == Roles.Retail ? "Retail employee" : role)</span></div>
+            <a class="nav-item" asp-controller="Account" asp-action="Password">@Ui.Icon("lock")<span>Change password</span></a>
+            <form asp-controller="Account" asp-action="Logout" method="post" data-no-guard>
+                <button type="submit" class="nav-item" data-no-guard>@Ui.Icon("log-out")<span>Sign out</span></button>
+            </form>
+        </div>
+    </aside>
+    <div class="main">
+        <div class="topbar-mobile">
+            <button type="button" id="nav-toggle" aria-label="Open menu" aria-controls="sidebar" aria-expanded="false">@Ui.Icon("menu", 22)</button>
+            <strong>Nexus</strong>
+        </div>
+        <main id="content" class="page">@RenderBody()</main>
+    </div>
+    <div class="nav-backdrop"></div>
+</div>
+<partial name="_Flash" />
+<partial name="_Confirm" />
+<script src="~/lib/bootstrap/bootstrap.bundle.min.js"></script>
+<script src="~/js/site.js" asp-append-version="true"></script>
+</body>
+</html>

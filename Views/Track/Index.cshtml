@@ -1,0 +1,21 @@
+@model TrackVm
+@{ ViewData["Title"] = "Track an order or connection"; }
+<div class="wrap-mid">
+    <h1 class="page-title">Track an order or connection</h1>
+    <p class="page-sub mb-4">Type the id from your receipt or bill. Spaces and dashes are fine.</p>
+
+    <form class="lookup" asp-controller="Track" asp-action="Index" method="get">
+        <label for="lookup-id">Order id or account id</label>
+        <div class="row-in">
+            <input id="lookup-id" class="form-control @(Model.Message != null ? "input-validation-error" : "")" type="text" name="id" value="@Model.Query" data-id-input autocomplete="off" spellcheck="false" placeholder="D0000000001" required />
+            <button class="btn btn-primary" type="submit">Check status</button>
+        </div>
+        @if (Model.Message != null) { <span class="field-validation-error" role="alert">@Model.Message</span> }
+        <div class="formats"><span>Order: letter and 10 digits</span><span>Account: letter and 15 digits</span></div>
+    </form>
+
+    @if (!User.Identity.IsAuthenticated)
+    {
+        <p class="muted mt-4">To search by name, phone number or date, or to see bills, <a asp-controller="Account" asp-action="Login">sign in</a>.</p>
+    }
+</div>

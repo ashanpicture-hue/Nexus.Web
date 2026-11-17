@@ -1,0 +1,31 @@
+@model CustomerVm
+@{
+    var editing = Model.Id != 0;
+    ViewData["Title"] = editing ? "Edit customer" : "Register customer";
+}
+<a class="back-link" href="@(User.IsInRole(Roles.Retail) && !editing ? Url.Action("Pick") : Url.Action("Index"))">@Ui.Icon("arrow-left", 14) Back</a>
+<div class="page-head"><h1 class="page-title">@ViewData["Title"]</h1></div>
+<form asp-action="@(editing ? "Edit" : "Create")" asp-route-id="@(editing ? Model.Id : (int?)null)" method="post" novalidate>
+    <partial name="_Summary" />
+    <div class="panel"><div class="panel-body">
+        <partial name="_CustomerFields" model="Model" />
+        @if (!editing)
+        {
+            <div class="form-section">
+                <div class="form-check mb-3">
+                    <input class="form-check-input" type="checkbox" id="CreateLogin" name="CreateLogin" value="true" checked="@Model.CreateLogin" />
+                    <input type="hidden" name="CreateLogin" value="false" />
+                    <label class="form-check-label" for="CreateLogin">Create a portal login so the customer can follow orders and bills</label>
+                </div>
+                <div class="form-grid">
+                    <div class="c-6"><label class="form-label" asp-for="Username">Username</label><input class="form-control" asp-for="Username" spellcheck="false" autocomplete="off" /><span asp-validation-for="Username" class="field-validation-error"></span></div>
+                    <div class="c-6"><label class="form-label" asp-for="Password">Password</label><input class="form-control" asp-for="Password" autocomplete="new-password" /><span asp-validation-for="Password" class="field-validation-error"></span></div>
+                </div>
+            </div>
+        }
+        <div class="form-actions">
+            <button class="btn btn-primary" type="submit" data-busy="Saving">@(editing ? "Save changes" : User.IsInRole(Roles.Retail) ? "Save and start order" : "Save customer")</button>
+            <a class="btn btn-quiet" href="@(editing ? Url.Action("Details", new { id = Model.Id }) : Url.Action("Index"))">Cancel</a>
+        </div>
+    </div></div>
+</form>

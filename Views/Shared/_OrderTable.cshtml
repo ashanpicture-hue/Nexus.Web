@@ -1,0 +1,26 @@
+@model List<ServiceOrder>
+@if (!Model.Any())
+{
+    <div class="empty"><strong>No orders here</strong>Orders will appear as they are placed.</div>
+}
+else
+{
+    <div class="table-wrap">
+        <table class="table">
+            <thead><tr><th>Order</th><th>Customer</th><th>Plan</th><th>Placed</th><th>Status</th><th></th></tr></thead>
+            <tbody>
+            @foreach (var o in Model)
+            {
+                <tr>
+                    <td>@Ui.Id(o.OrderNo)</td>
+                    <td>@(o.Customer?.FullName)</td>
+                    <td>@(o.Plan?.Name)@(o.Quantity > 1 ? " × " + o.Quantity : "")</td>
+                    <td>@Fmt.Date(o.PlacedOn)</td>
+                    <td>@Ui.Status(o.Status)</td>
+                    <td class="row-actions"><a asp-controller="Orders" asp-action="Details" asp-route-id="@o.Id">Open</a></td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+}

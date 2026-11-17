@@ -1,0 +1,20 @@
+@model List<Vendor>
+@{ ViewData["Title"] = "Vendors"; var q = (string)ViewBag.Q; }
+<div class="page-head"><div><h1 class="page-title">Vendors</h1><p class="page-sub">Where equipment is bought</p></div><div class="page-actions"><a class="btn btn-primary" asp-action="Create">@Ui.Icon("plus") Add vendor</a></div></div>
+<form method="get" class="filters"><div class="search"><span>@Ui.Icon("search", 15)</span><input class="form-control" type="search" name="q" value="@q" placeholder="Vendor or contact" aria-label="Search vendors" /></div><button class="btn btn-quiet" type="submit">Search</button></form>
+<div class="panel">
+    @if (!Model.Any()) { <div class="empty"><strong>No vendors found</strong></div> }
+    else
+    {
+        <div class="table-wrap"><table class="table">
+            <thead><tr><th>Vendor</th><th>Contact</th><th>Phone</th><th>Email</th><th>Status</th><th></th></tr></thead>
+            <tbody>
+            @foreach (var v in Model)
+            {
+                <tr><td>@v.Name</td><td>@v.ContactPerson</td><td class="mono">@v.Phone</td><td>@v.Email</td><td>@Ui.Active(v.IsActive)</td>
+                    <td class="row-actions"><a asp-action="Edit" asp-route-id="@v.Id">Edit</a>
+                        <form asp-action="Delete" asp-route-id="@v.Id" method="post" class="d-inline"><button type="button" class="btn-link-plain text-danger" data-confirm="@v.Name will be deleted, or retired if it has purchase history." data-confirm-title="Delete this vendor?" data-confirm-verb="Delete vendor">Delete</button></form></td></tr>
+            }
+            </tbody></table></div>
+    }
+</div>

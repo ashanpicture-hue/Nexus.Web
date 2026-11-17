@@ -1,0 +1,19 @@
+@model Paged<Connection>
+@{ ViewData["Title"] = "Bills to generate"; }
+<div class="page-head"><div><h1 class="page-title">Bills to generate</h1><p class="page-sub">Connections with no bill covering today, oldest first</p></div></div>
+<div class="panel">
+    @if (!Model.Items.Any()) { <div class="empty"><strong>Every connection is billed</strong>New connections and finished billing periods show up here.</div> }
+    else
+    {
+        <div class="table-wrap"><table class="table">
+            <thead><tr><th>Account</th><th>Customer</th><th>Plan</th><th>Connected</th><th></th></tr></thead>
+            <tbody>
+            @foreach (var c in Model.Items)
+            {
+                <tr><td>@Ui.Id(c.AccountId)</td><td>@c.Customer.FullName</td><td>@c.Plan.Name</td><td>@Fmt.Date(c.ActivatedOn)</td>
+                    <td class="row-actions"><a class="btn btn-quiet btn-sm" asp-action="Generate" asp-route-connectionId="@c.Id">Generate bill</a></td></tr>
+            }
+            </tbody></table></div>
+        <partial name="_Pager" model="(PagedBase)Model" />
+    }
+</div>

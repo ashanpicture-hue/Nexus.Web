@@ -1,0 +1,127 @@
+@model OrderFormVm
+@{
+    var isCustomer = User.IsInRole(Roles.Customer);
+    ViewData["Title"] = isCustomer ? "Apply for a connection" : "New order";
+    var action = isCustomer ? "Apply" : "New";
+    var schemesJson = System.Text.Json.JsonSerializer.Serialize(Model.Schemes.Select(s => new { min = s.MinConnections, max = s.MaxConnections, pct = s.Percent }));
+    var depositsJson = System.Text.Json.JsonSerializer.Serialize(Model.Deposits.ToDictionary(d => ((int)d.ConnectionType).ToString(), d => d.Amount));
+    var landlinePlans = Model.Plans.Where(p => p.ConnectionType == ConnectionType.Telephone).ToList();
+}
+<a class="back-link" href="@(isCustomer ? Url.Action("Index", "Dashboard") : Url.Action("Pick", "Customers"))">@Ui.Icon("arrow-left", 14) Back</a>
+<div class="page-head">
+    <div>
+        <h1 class="page-title">@ViewData["Title"]</h1>
+        @if (!isCustomer) { <p class="page-sub">For @Model.CustomerName</p> }
+    </div>
+</div>
+
+<form id="order-form" asp-action="@action" method="post" enctype="multipart/form-data" novalidate data-schemes="@schemesJson" data-deposits="@depositsJson">
+    <partial name="_Summary" />
+    <input type="hidden" asp-for="CustomerId" />
+    <div class="panel"><div class="panel-body">
+        <div class="form-grid">
+            <div>
+                <span class="form-label d-block">Connection type</span>
+                <div class="choice">
+                    @foreach (var t in Enum.GetValues<ConnectionType>())
+                    {
+                        <input type="radio" id="ct-@((int)t)" name="ConnectionType" value="@((int)t)" checked="@(Model.ConnectionType == t)" />
+                        <label for="ct-@((int)t)">@t.Label()</label>
+                    }
+                </div>
+            </div>
+
+            <div class="c-6">
+                <label class="form-label" asp-for="PlanId">Plan</label>
+                <select class="form-select" asp-for="PlanId">
+                    <option value="">Choose a plan</option>
+                    @foreach (var p in Model.Plans)
+                    {
+                        <option value="@p.Id" data-type="@((int)p.ConnectionType)" selected="@(Model.PlanId == p.Id)">@p.Name, @Fmt.Money(p.Price)</option>
+                    }
+                </select>
+                <span asp-validation-for="PlanId" class="field-validation-error"></span>
+            </div>
+            <div class="c-4">
+                <label class="form-label" asp-for="ProductId">Equipment</label>
+                <select class="form-select" asp-for="ProductId">
+                    <option value="">Decide at installation</option>
+                    @foreach (var p in Model.Products)
+                    {
+                        <option value="@p.Id" data-cat="@((int)p.Category)" selected="@(Model.ProductId == p.Id)">@p.Name</option>
+                    }
+                </select>
+            </div>
+            <div class="c-3">
+                <label class="form-label" asp-for="Quantity">Connections</label>
+                <input class="form-control mono" asp-for="Quantity" type="number" min="1" max="500" inputmode="numeric" />
+                <span asp-validation-for="Quantity" class="field-validation-error"></span>
+            </div>
+            <div class="c-8">
+                <div class="note" aria-live="polite">
+                    <div data-discount-note></div>
+                    <div data-deposit-note class="muted small mt-1"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-section" data-dial-only>
+            <h2>Landline for dial-up</h2>
+            <p class="muted mb-3">Dial-up runs on a Nexus landline. Quote one you already hold, or order one with this application.</p>
+            <div class="form-check mb-3">
+                <input class="form-check-input" type="checkbox" id="HasExistingLandline" name="HasExistingLandline" value="true" checked="@Model.HasExistingLandline" />
+                <input type="hidden" name="HasExistingLandline" value="false" />
+                <label class="form-check-label" for="HasExistingLandline">The customer already holds a Nexus landline</label>
+            </div>
+            <div data-existing-landline>
+                <label class="form-label" asp-for="ExistingLandlineAccountId">Landline account id</label>
+                <input class="form-control mono" asp-for="ExistingLandlineAccountId" data-id-input placeholder="T101000000000001" autocomplete="off" spellcheck="false" />
+                <div class="hint">Only the internet is checked for feasibility, and the order is for one connection.</div>
+            </div>
+            <div data-new-landline>
+                <label class="form-label" asp-for="LandlinePlanId">Landline plan</label>
+                <select class="form-select" asp-for="LandlinePlanId">
+                    <option value="">Choose a landline plan</option>
+                    @foreach (var p in landlinePlans) { <option value="@p.Id" selected="@(Model.LandlinePlanId == p.Id)">@p.Name, @Fmt.Money(p.Price)</option> }
+                </select>
+                <div class="hint">Both the landline and the internet are checked for feasibility.</div>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <h2>Installation address</h2>
+            <div class="form-grid mt-3">
+                <div class="c-4">
+                    <label class="form-label" asp-for="InstallCityId">City</label>
+                    <select class="form-select" asp-for="InstallCityId">
+                        <option value="">Choose a city</option>
+                        @foreach (var c in Model.Cities) { <option value="@c.Id" selected="@(Model.InstallCityId == c.Id)">@c.Name</option> }
+                    </select>
+                    <span asp-validation-for="InstallCityId" class="field-validation-error"></span>
+                </div>
+                <div class="c-8">
+                    <label class="form-label" asp-for="InstallAddress">Address</label>
+                    <input class="form-control" asp-for="InstallAddress" />
+                    <span asp-validation-for="InstallAddress" class="field-validation-error"></span>
+                </div>
+                <div>
+                    <label class="form-label" asp-for="Remarks">Remarks <span class="muted">(optional)</span></label>
+                    <input class="form-control" asp-for="Remarks" />
+                </div>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <h2>Documents <span class="muted fw-normal">(optional, PDF, JPG or PNG up to 5 MB)</span></h2>
+            <div class="form-grid mt-3">
+                <div class="c-6"><label class="form-label" asp-for="AddressProof">Address proof</label><input class="form-control" asp-for="AddressProof" type="file" accept=".pdf,.jpg,.jpeg,.png" /></div>
+                <div class="c-6"><label class="form-label" asp-for="ApplicationForm">Signed application form</label><input class="form-control" asp-for="ApplicationForm" type="file" accept=".pdf,.jpg,.jpeg,.png" /></div>
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <button class="btn btn-primary" type="submit" data-busy="Placing order">Place order</button>
+            <a class="btn btn-quiet" href="@(isCustomer ? Url.Action("Index", "Dashboard") : Url.Action("Pick", "Customers"))">Cancel</a>
+        </div>
+    </div></div>
+</form>

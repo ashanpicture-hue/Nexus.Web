@@ -1,0 +1,27 @@
+@model Paged<Employee>
+@{ ViewData["Title"] = "Employees"; var role = (string)ViewBag.Role; var q = (string)ViewBag.Q; }
+<div class="page-head"><div><h1 class="page-title">Employees</h1><p class="page-sub">@Model.Total people with a staff login</p></div>
+    <div class="page-actions"><a class="btn btn-primary" asp-action="Create">@Ui.Icon("plus") Add employee</a></div></div>
+<form method="get" class="filters">
+    <div class="search"><span>@Ui.Icon("search", 15)</span><input class="form-control" type="search" name="q" value="@q" placeholder="Name, username or employee number" aria-label="Search employees" /></div>
+    <select class="form-select" name="role" aria-label="Role"><option value="">All roles</option>@foreach (var r in Roles.EmployeeRoles) { <option value="@r" selected="@(role == r)">@r</option> }</select>
+    <button class="btn btn-quiet" type="submit">Filter</button>
+    @if (!string.IsNullOrEmpty(q) || !string.IsNullOrEmpty(role)) { <a class="btn-link-plain small" asp-action="Index">Clear</a> }
+</form>
+<div class="panel">
+    @if (!Model.Items.Any()) { <div class="empty"><strong>No employees found</strong>Change the filters.</div> }
+    else
+    {
+        <div class="table-wrap"><table class="table">
+            <thead><tr><th>No.</th><th>Name</th><th>Role</th><th>Shop</th><th>Phone</th><th>Status</th><th></th></tr></thead>
+            <tbody>
+            @foreach (var e in Model.Items)
+            {
+                <tr><td class="mono">@e.EmployeeNo</td><td>@e.User.FullName<div class="muted small">@e.User.Username</div></td><td>@e.User.Role</td>
+                    <td>@(e.RetailShop?.Name ?? "none")</td><td class="mono">@e.User.Phone</td><td>@Ui.Active(e.User.IsActive)</td>
+                    <td class="row-actions"><a asp-action="Edit" asp-route-id="@e.Id">Edit</a></td></tr>
+            }
+            </tbody></table></div>
+        <partial name="_Pager" model="(PagedBase)Model" />
+    }
+</div>

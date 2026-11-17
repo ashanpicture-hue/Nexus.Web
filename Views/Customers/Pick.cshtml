@@ -1,0 +1,27 @@
+@model List<Customer>
+@{ ViewData["Title"] = "New order: find the customer"; var q = (string)ViewBag.Q; }
+<div class="page-head"><div><h1 class="page-title">New order</h1><p class="page-sub">Step 1 of 2. Find the customer, or register a new one.</p></div></div>
+<form method="get" class="filters">
+    <div class="search"><span>@Ui.Icon("search", 15)</span><input class="form-control" type="search" name="q" value="@q" placeholder="Phone number or name" aria-label="Find customer" autofocus autocomplete="off" /></div>
+    <button class="btn btn-quiet" type="submit">Find</button>
+    <a class="btn btn-primary" asp-action="Create">@Ui.Icon("plus") Register new customer</a>
+</form>
+@if (!string.IsNullOrWhiteSpace(q))
+{
+    <div class="panel">
+        @if (!Model.Any()) { <div class="empty"><strong>Nobody matches "@q"</strong>Register the customer to continue.</div> }
+        else
+        {
+            <div class="table-wrap"><table class="table"><tbody>
+            @foreach (var c in Model)
+            {
+                <tr>
+                    <td>@c.FullName@if (c.Kind == CustomerKind.Corporate) { <div class="muted small">@c.CompanyName</div> }</td>
+                    <td class="mono">@c.Phone</td><td>@c.City.Name</td>
+                    <td class="row-actions"><a class="btn btn-primary btn-sm" asp-controller="Orders" asp-action="New" asp-route-customerId="@c.Id">Start order</a></td>
+                </tr>
+            }
+            </tbody></table></div>
+        }
+    </div>
+}

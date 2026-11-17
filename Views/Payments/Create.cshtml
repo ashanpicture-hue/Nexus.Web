@@ -1,0 +1,37 @@
+@model PaymentVm
+@{
+    ViewData["Title"] = "Take payment";
+    var bill = (Bill)ViewBag.Bill;
+    var c = bill.Connection;
+}
+<a class="back-link" asp-controller="Billing" asp-action="Details" asp-route-id="@bill.Id">@Ui.Icon("arrow-left", 14) Bill</a>
+<div class="page-head"><div><div class="mb-2">@Ui.Id(c.AccountId)</div><h1 class="page-title">Take payment</h1><p class="page-sub">@c.Customer.FullName · bill @bill.BillNo</p></div></div>
+<div class="stats">
+    <div class="stat"><span class="figure">@Fmt.Money(bill.Total)</span><span class="label">Bill total</span></div>
+    <div class="stat"><span class="figure">@Fmt.Money(bill.AmountPaid)</span><span class="label">Paid so far</span></div>
+    <div class="stat @(bill.DueDate < DateTime.Today ? "is-alert" : "")"><span class="figure">@Fmt.Money(bill.Due)</span><span class="label">Due @(bill.DueDate < DateTime.Today ? "since " : "by ")@Fmt.Date(bill.DueDate)</span></div>
+</div>
+<form asp-action="Create" method="post" novalidate>
+    <input type="hidden" asp-for="BillId" />
+    <partial name="_Summary" />
+    <div class="panel"><div class="panel-body">
+        <div class="form-grid">
+            <div class="c-4">
+                <label class="form-label" asp-for="Amount">Amount</label>
+                <div class="input-money"><input class="form-control" asp-for="Amount" type="number" step="0.01" min="0.01" max="@bill.Due.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture)" inputmode="decimal" autofocus /></div>
+                <div class="hint"><button type="button" class="btn-link-plain" data-fill="#Amount" data-value="@bill.Due.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture)">Pay in full, @Fmt.Money(bill.Due)</button></div>
+                <span asp-validation-for="Amount" class="field-validation-error"></span>
+            </div>
+            <div class="c-4">
+                <label class="form-label" asp-for="Mode">Paid by</label>
+                <select class="form-select" asp-for="Mode" asp-items="EnumExt.Options<PaymentMode>(Model.Mode)"></select>
+            </div>
+            <div class="c-4">
+                <label class="form-label" asp-for="PaidOn">Date</label>
+                <input class="form-control mono" asp-for="PaidOn" type="date" value="@Model.PaidOn.ToString("yyyy-MM-dd")" max="@DateTime.Today.ToString("yyyy-MM-dd")" />
+            </div>
+            <div><label class="form-label" asp-for="Reference">Reference <span class="muted">(cheque number, card authorisation)</span></label><input class="form-control mono" asp-for="Reference" /></div>
+        </div>
+        <div class="form-actions"><button class="btn btn-primary" type="submit" data-busy="Recording">Record payment</button><a class="btn btn-quiet" asp-controller="Billing" asp-action="Details" asp-route-id="@bill.Id">Cancel</a></div>
+    </div></div>
+</form>

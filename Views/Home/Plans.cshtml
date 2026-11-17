@@ -1,0 +1,58 @@
+@model List<Plan>
+@{
+    ViewData["Title"] = "Plans";
+    var deposits = (List<SecurityDepositRate>)ViewBag.Deposits;
+    var tax = (decimal)ViewBag.TaxPercent;
+    var q = (string)ViewBag.Q;
+}
+<div class="wrap py-plans">
+    <div class="page-head">
+        <div>
+            <h1 class="page-title">Plans and tariffs</h1>
+            <p class="page-sub">Prices in dollars. Service tax of @Fmt.Percent(tax) is added to every bill.</p>
+        </div>
+        <form method="get" class="filters mb-0">
+            <div class="search"><span>@Ui.Icon("search", 15)</span><input class="form-control" type="search" name="q" value="@q" placeholder="Search plans" aria-label="Search plans" /></div>
+            <button class="btn btn-quiet" type="submit">Search</button>
+        </form>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="panel"><div class="empty"><strong>No plans match "@q"</strong>Try a speed such as 128, or a word such as monthly.</div></div>
+    }
+    @foreach (var group in Model.GroupBy(p => p.ConnectionType))
+    {
+        var dep = deposits.FirstOrDefault(d => d.ConnectionType == group.Key);
+        <div class="panel">
+            <div class="panel-head">
+                <h2>@group.Key.Label()</h2>
+                @if (dep != null) { <span class="muted small">Security deposit @Fmt.Money(dep.Amount), refundable</span> }
+            </div>
+            <div class="table-wrap">
+                <table class="table">
+                    <thead>
+                    <tr><th>Plan</th><th>Type</th><th>Covers</th><th class="num">Price</th>
+                        @if (group.Key == ConnectionType.Telephone) { <th class="num">Local</th><th class="num">STD</th><th class="num">Messaging</th> }
+                    </tr>
+                    </thead>
+                    <tbody>
+                    @foreach (var p in group)
+                    {
+                        <tr>
+                            <td>@p.Name</td>
+                            <td>@p.Category.Label()</td>
+                            <td>@(p.ValidityMonths == 1 ? "1 month" : p.ValidityMonths + " months")@(p.Hours != null ? ", " + p.Hours + " hours" : "")</td>
+                            <td class="num">@Fmt.Money(p.Price)</td>
+                            @if (group.Key == ConnectionType.Telephone)
+                            {
+                                <td class="num">@Fmt.Rate(p.LocalRate)</td><td class="num">@Fmt.Rate(p.StdRate)</td><td class="num">@Fmt.Rate(p.MobileMsgRate)</td>
+                            }
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+</div>

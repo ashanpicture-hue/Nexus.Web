@@ -1,0 +1,38 @@
+@model List<Product>
+@{
+    ViewData["Title"] = "Equipment and stock";
+    var q = (string)ViewBag.Q; var cat = (ProductCategory?)ViewBag.Category;
+    var demand = (Dictionary<int, int>)ViewBag.Demand;
+    var isAdmin = User.IsInRole(Roles.Admin);
+}
+<div class="page-head"><div><h1 class="page-title">Equipment and stock</h1><p class="page-sub">Stock is read against orders that still need equipment</p></div>
+    <div class="page-actions"><a class="btn btn-primary" asp-action="Create">@Ui.Icon("plus") Add equipment</a></div></div>
+<form method="get" class="filters">
+    <div class="search"><span>@Ui.Icon("search", 15)</span><input class="form-control" type="search" name="q" value="@q" placeholder="Name or model" aria-label="Search equipment" /></div>
+    <select class="form-select" name="category" aria-label="Category"><option value="">All categories</option>@foreach (var c in Enum.GetValues<ProductCategory>()) { <option value="@((int)c)" selected="@(cat == c)">@c.Label()</option> }</select>
+    <button class="btn btn-quiet" type="submit">Filter</button>
+    @if (!string.IsNullOrEmpty(q) || cat != null) { <a class="btn-link-plain small" asp-action="Index">Clear</a> }
+</form>
+<div class="panel">
+    @if (!Model.Any()) { <div class="empty"><strong>No equipment found</strong></div> }
+    else
+    {
+        <div class="table-wrap"><table class="table">
+            <thead><tr><th>Item</th><th>Category</th><th>Vendor</th><th class="num">In stock</th><th class="num">Waiting</th><th class="num">Replacement</th><th>Status</th><th></th></tr></thead>
+            <tbody>
+            @foreach (var p in Model)
+            {
+                var wait = demand.TryGetValue(p.Id, out var w) ? w : 0;
+                var low = p.StockQty <= p.ReorderLevel;
+                <tr><td>@p.Name<div class="muted small">@p.Model</div></td><td>@p.Category.Label()</td><td>@(p.Vendor?.Name ?? "none")</td>
+                    <td class="num @(low ? "text-danger" : "")">@p.StockQty</td><td class="num">@wait</td><td class="num">@Fmt.Money(p.ReplacementCharge)</td><td>@Ui.Active(p.IsActive)</td>
+                    <td class="row-actions"><a asp-action="Edit" asp-route-id="@p.Id">Edit</a>
+                        @if (isAdmin)
+                        {
+                            <a asp-controller="Purchasing" asp-action="Create" asp-route-productId="@p.Id">Reorder</a>
+                            <form asp-action="Delete" asp-route-id="@p.Id" method="post" class="d-inline"><button type="button" class="btn-link-plain text-danger" data-confirm="@p.Name will be deleted, or retired if it has history." data-confirm-title="Delete this equipment?" data-confirm-verb="Delete">Delete</button></form>
+                        }</td></tr>
+            }
+            </tbody></table></div>
+    }
+</div>

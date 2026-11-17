@@ -1,0 +1,19 @@
+@model FeedbackVm
+@{ ViewData["Title"] = "Send feedback"; }
+<div class="page-head"><h1 class="page-title">Send feedback</h1></div>
+<form asp-action="Create" method="post" novalidate>
+    <partial name="_Summary" />
+    <div class="panel"><div class="panel-body"><div class="form-grid">
+        <div>
+            <span class="form-label d-block">How was it?</span>
+            <div class="choice">
+                @for (var r = 1; r <= 5; r++) { <input type="radio" id="r-@r" name="Rating" value="@r" checked="@(Model.Rating == r)" /><label for="r-@r">@r</label> }
+            </div>
+            <div class="hint">1 is poor, 5 is excellent.</div>
+        </div>
+        <div><label class="form-label" asp-for="ServiceOrderId">About</label>
+            <select class="form-select" asp-for="ServiceOrderId"><option value="">General</option>@foreach (var o in Model.Orders) { <option value="@o.Id" selected="@(Model.ServiceOrderId == o.Id)">Order @IdFormat.Chunk(o.OrderNo)</option> }</select></div>
+        <div><label class="form-label" asp-for="Comments">Your comments</label><textarea class="form-control" asp-for="Comments" rows="4"></textarea><span asp-validation-for="Comments" class="field-validation-error"></span></div>
+    </div>
+    <div class="form-actions"><button class="btn btn-primary" type="submit" data-busy="Sending">Send feedback</button><a class="btn btn-quiet" asp-controller="Dashboard" asp-action="Index">Cancel</a></div></div></div>
+</form>

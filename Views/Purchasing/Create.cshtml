@@ -1,0 +1,41 @@
+@model PurchaseFormVm
+@{ ViewData["Title"] = "New purchase order"; }
+<a class="back-link" asp-action="Index">@Ui.Icon("arrow-left", 14) Purchase orders</a>
+<div class="page-head"><h1 class="page-title">New purchase order</h1></div>
+
+@functions {
+    // One product row. Names are filled in by site.js so rows can be added and removed freely.
+    public static Microsoft.AspNetCore.Html.IHtmlContent Row(List<Product> products, PurchaseLineVm l, int i)
+    {
+        var sb = new System.Text.StringBuilder();
+        sb.Append("<div class=\"line-row\"><div><label class=\"form-label small\">Equipment</label><select class=\"form-select\" data-name=\"ProductId\" name=\"Lines[" + i + "].ProductId\"><option value=\"0\">Choose equipment</option>");
+        foreach (var p in products)
+            sb.Append("<option value=\"" + p.Id + "\"" + (l != null && l.ProductId == p.Id ? " selected" : "") + ">" + System.Net.WebUtility.HtmlEncode(p.Name) + " (" + p.StockQty + " in stock)</option>");
+        sb.Append("</select></div>");
+        sb.Append("<div><label class=\"form-label small\">Quantity</label><input class=\"form-control mono\" type=\"number\" min=\"1\" data-name=\"Quantity\" name=\"Lines[" + i + "].Quantity\" value=\"" + (l?.Quantity ?? 1) + "\" /></div>");
+        sb.Append("<div><label class=\"form-label small\">Unit cost</label><input class=\"form-control mono\" type=\"number\" min=\"0\" step=\"0.01\" data-name=\"UnitCost\" name=\"Lines[" + i + "].UnitCost\" value=\"" + (l?.UnitCost ?? 0).ToString("0.00", System.Globalization.CultureInfo.InvariantCulture) + "\" /></div>");
+        sb.Append("<button type=\"button\" class=\"btn btn-quiet btn-sm\" data-remove aria-label=\"Remove line\">Remove</button></div>");
+        return new Microsoft.AspNetCore.Html.HtmlString(sb.ToString());
+    }
+}
+
+<form asp-action="Create" method="post" novalidate>
+    <partial name="_Summary" />
+    <div class="panel"><div class="panel-body">
+        <div class="form-grid">
+            <div class="c-6"><label class="form-label" asp-for="VendorId">Vendor</label>
+                <select class="form-select" asp-for="VendorId"><option value="">Choose a vendor</option>@foreach (var v in Model.Vendors) { <option value="@v.Id" selected="@(Model.VendorId == v.Id)">@v.Name</option> }</select>
+                <span asp-validation-for="VendorId" class="field-validation-error"></span></div>
+            <div class="c-6"><label class="form-label" asp-for="Notes">Note <span class="muted">(optional)</span></label><input class="form-control" asp-for="Notes" /></div>
+        </div>
+        <div class="form-section">
+            <h2>Equipment</h2>
+            <div id="po-lines" class="mt-3">
+                @for (var i = 0; i < Model.Lines.Count; i++) { @Row(Model.Products, Model.Lines[i], i) }
+            </div>
+            <button type="button" class="btn btn-quiet btn-sm" id="po-add">@Ui.Icon("plus", 14) Add another item</button>
+            <template id="po-row-template">@Row(Model.Products, null, 0)</template>
+        </div>
+        <div class="form-actions"><button class="btn btn-primary" type="submit" data-busy="Creating">Create purchase order</button><a class="btn btn-quiet" asp-action="Index">Cancel</a></div>
+    </div></div>
+</form>

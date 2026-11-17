@@ -1,0 +1,44 @@
+@model TrackVm
+@{
+    var o = Model.Order;
+    ViewData["Title"] = "Order " + o.OrderNo;
+
+    var s = o.Status;
+    var checks = o.FeasibilityChecks.GroupBy(c => c.Subject).Select(g => g.OrderByDescending(c => c.CheckedOn).First()).ToList();
+}
+<div class="wrap-mid">
+    <a class="back-link" asp-controller="Track" asp-action="Index">@Ui.Icon("arrow-left", 14) Track another</a>
+
+    <div class="track-head pt-2">
+        <div class="muted small mb-2">Order</div>
+        <div class="mb-3">@Ui.Id(o.OrderNo)</div>
+        <h1 class="page-title">@o.ConnectionType.Label() connection@(o.Quantity > 1 ? ", " + o.Quantity + " lines" : "")</h1>
+        <p class="page-sub">@o.Plan.Name, installation in @o.InstallCity.Name. Placed @Fmt.Date(o.PlacedOn).</p>
+    </div>
+
+    <div class="panel"><div class="panel-body">
+        <partial name="_OrderWire" model="o" />
+    </div></div>
+
+    <div class="panel">
+        <div class="panel-head"><h2>Feasibility</h2></div>
+        <div class="panel-body">
+            @if (!checks.Any()) { <p class="muted mb-0">The technical team has not checked this address yet.</p> }
+            else
+            {
+                <dl class="kv kv-tight">
+                    @foreach (var c in checks)
+                    {
+                        <dt>@c.Subject.Label()</dt>
+                        <dd>@(c.IsFeasible ? "Feasible" : "Not feasible"), @c.DistanceKm.ToString("0.##") km from the exchange</dd>
+                    }
+                </dl>
+            }
+        </div>
+    </div>
+
+    @if (User.Identity.IsAuthenticated)
+    {
+        <p class="mt-4"><a class="btn btn-quiet" asp-controller="Dashboard" asp-action="Index">Back to my overview</a></p>
+    }
+</div>

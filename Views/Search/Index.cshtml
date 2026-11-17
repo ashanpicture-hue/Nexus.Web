@@ -1,0 +1,62 @@
+@model SearchVm
+@{ ViewData["Title"] = "Search"; }
+<div class="page-head"><div><h1 class="page-title">Search</h1><p class="page-sub">By id, name, phone number, connection type or date. Fill in any of them.</p></div></div>
+
+<form method="get" asp-action="Index" class="panel"><div class="panel-body">
+    <div class="form-grid">
+        <div>
+            <span class="form-label d-block">Look for</span>
+            <div class="choice">
+                <input type="radio" id="t-o" name="Target" value="orders" checked="@(Model.Target != "connections")" /><label for="t-o">Orders</label>
+                <input type="radio" id="t-c" name="Target" value="connections" checked="@(Model.Target == "connections")" /><label for="t-c">Connections</label>
+            </div>
+        </div>
+        <div class="c-4"><label class="form-label" for="s-id">Order or account id</label><input id="s-id" class="form-control mono" name="Id" value="@Model.Id" data-id-input autocomplete="off" spellcheck="false" placeholder="Full or part of the id" /></div>
+        <div class="c-4"><label class="form-label" for="s-name">Customer name</label><input id="s-name" class="form-control" name="Name" value="@Model.Name" /></div>
+        <div class="c-4"><label class="form-label" for="s-phone">Contact number</label><input id="s-phone" class="form-control mono" name="Phone" value="@Model.Phone" inputmode="tel" /></div>
+        <div class="c-4"><label class="form-label" for="s-type">Connection type</label>
+            <select id="s-type" class="form-select" name="Type"><option value="">Any type</option>@foreach (var t in Enum.GetValues<ConnectionType>()) { <option value="@((int)t)" selected="@(Model.Type == t)">@t.Label()</option> }</select></div>
+        <div class="c-4"><label class="form-label" for="s-from">From</label><input id="s-from" class="form-control mono" type="date" name="From" value="@(Model.From?.ToString("yyyy-MM-dd"))" /></div>
+        <div class="c-4"><label class="form-label" for="s-to">To</label><input id="s-to" class="form-control mono" type="date" name="To" value="@(Model.To?.ToString("yyyy-MM-dd"))" /></div>
+    </div>
+    <div class="form-actions"><button class="btn btn-primary" type="submit">Search</button><a class="btn btn-quiet" asp-action="Index">Clear</a></div>
+</div></form>
+
+@if (Model.Submitted)
+{
+    <div class="panel mt-4">
+        <div class="panel-head"><h2>Results</h2><span class="muted small">@(Model.Target == "connections" ? Model.Connections.Count : Model.Orders.Count) found@((Model.Target == "connections" ? Model.Connections.Count : Model.Orders.Count) == 100 ? ", showing the first 100" : "")</span></div>
+        @if (Model.Target == "connections")
+        {
+            if (!Model.Connections.Any()) { <div class="empty"><strong>Nothing matches</strong>Loosen one of the filters.</div> }
+            else
+            {
+                <div class="table-wrap"><table class="table">
+                    <thead><tr><th>Account</th><th>Customer</th><th>Plan</th><th>Connected</th><th>Status</th><th></th></tr></thead>
+                    <tbody>
+                    @foreach (var c in Model.Connections)
+                    {
+                        <tr><td>@Ui.Id(c.AccountId)</td><td>@c.Customer.FullName<div class="muted small mono">@c.Customer.Phone</div></td><td>@c.Plan.Name</td><td>@Fmt.Date(c.ActivatedOn)</td><td>@Ui.Status(c.Status)</td>
+                            <td class="row-actions"><a asp-controller="Connections" asp-action="Details" asp-route-id="@c.Id">Open</a></td></tr>
+                    }
+                    </tbody></table></div>
+            }
+        }
+        else
+        {
+            if (!Model.Orders.Any()) { <div class="empty"><strong>Nothing matches</strong>Loosen one of the filters.</div> }
+            else
+            {
+                <div class="table-wrap"><table class="table">
+                    <thead><tr><th>Order</th><th>Customer</th><th>Plan</th><th>Placed</th><th>Status</th><th></th></tr></thead>
+                    <tbody>
+                    @foreach (var o in Model.Orders)
+                    {
+                        <tr><td>@Ui.Id(o.OrderNo)</td><td>@o.Customer.FullName<div class="muted small mono">@o.Customer.Phone</div></td><td>@o.Plan.Name</td><td>@Fmt.Date(o.PlacedOn)</td><td>@Ui.Status(o.Status)</td>
+                            <td class="row-actions"><a asp-controller="Orders" asp-action="Details" asp-route-id="@o.Id">Open</a></td></tr>
+                    }
+                    </tbody></table></div>
+            }
+        }
+    </div>
+}

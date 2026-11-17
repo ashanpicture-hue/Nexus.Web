@@ -1,0 +1,48 @@
+@model TrackVm
+@{
+    var c = Model.Connection;
+    ViewData["Title"] = "Connection " + c.AccountId;
+    var figClass = Model.Due <= 0 ? "is-clear" : Model.Overdue ? "is-overdue" : "is-due";
+}
+<div class="wrap-mid">
+    <a class="back-link" asp-controller="Track" asp-action="Index">@Ui.Icon("arrow-left", 14) Track another</a>
+    <div class="track-head pt-2">
+        <div class="muted small mb-2">Account</div>
+        <div class="mb-3">@Ui.Id(c.AccountId)</div>
+        <h1 class="page-title">@c.ConnectionType.Label() connection</h1>
+        <p class="page-sub">@c.Plan.Name, @c.City.Name. Connected @Fmt.Date(c.ActivatedOn).</p>
+    </div>
+
+    <div class="stats">
+        <div class="stat">
+            <span class="track-fig @figClass">@Fmt.Money(Model.Due)</span>
+            <span class="label">
+                @if (Model.Due <= 0) { <text>Nothing due</text> }
+                else if (Model.Overdue) { <text>Due, was payable by @Fmt.Date(Model.NextDue)</text> }
+                else { <text>Due by @Fmt.Date(Model.NextDue)</text> }
+            </span>
+        </div>
+        <div class="stat"><span class="figure fig-sm">@Ui.Status(c.Status)</span><span class="label">Connection status@(c.Status != ConnectionStatus.Active ? ", since " + Fmt.Date(c.StatusChangedOn) : "")</span></div>
+    </div>
+
+    <div class="panel">
+        <div class="panel-head"><h2>History</h2></div>
+        <div class="panel-body">
+            <ul class="timeline">
+                @foreach (var e in c.Events.OrderByDescending(x => x.At))
+                {
+                    <li><strong>@e.Event</strong><span class="when">@Fmt.DateTimeText(e.At)</span></li>
+                }
+            </ul>
+        </div>
+    </div>
+
+    @if (User.Identity.IsAuthenticated)
+    {
+        <p class="mt-4"><a class="btn btn-quiet" asp-controller="Connections" asp-action="Index" asp-route-q="@c.AccountId">Open full details</a></p>
+    }
+    else
+    {
+        <p class="muted mt-4">To see bills and payment history, <a asp-controller="Account" asp-action="Login">sign in</a>.</p>
+    }
+</div>

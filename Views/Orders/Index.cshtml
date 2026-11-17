@@ -1,0 +1,48 @@
+@model Paged<ServiceOrder>
+@{
+    ViewData["Title"] = User.IsInRole(Roles.Customer) ? "My orders" : "Orders";
+    var status = (OrderStatus?)ViewBag.Status;
+    var q = (string)ViewBag.Q;
+}
+<div class="page-head">
+    <div><h1 class="page-title">@ViewData["Title"]</h1><p class="page-sub">@Model.Total @(Model.Total == 1 ? "order" : "orders")</p></div>
+    <div class="page-actions">
+        @if (User.IsInRole(Roles.Retail)) { <a class="btn btn-primary" asp-controller="Customers" asp-action="Pick">@Ui.Icon("plus") New order</a> }
+        @if (User.IsInRole(Roles.Customer)) { <a class="btn btn-primary" asp-action="Apply">@Ui.Icon("plus") Apply for a connection</a> }
+    </div>
+</div>
+<form method="get" class="filters">
+    <div class="search"><span>@Ui.Icon("search", 15)</span><input class="form-control" type="search" name="q" value="@q" placeholder="Order id or customer name" aria-label="Search orders" /></div>
+    <select class="form-select" name="status" aria-label="Status">
+        <option value="">All statuses</option>
+        @foreach (var s in Enum.GetValues<OrderStatus>()) { <option value="@((int)s)" selected="@(status == s)">@s.Label()</option> }
+    </select>
+    <button class="btn btn-quiet" type="submit">Filter</button>
+    @if (status != null || !string.IsNullOrEmpty(q)) { <a class="btn-link-plain small" asp-action="Index">Clear</a> }
+</form>
+<div class="panel">
+    @if (!Model.Items.Any())
+    {
+        <div class="empty"><strong>No orders found</strong>Change the filters, or place a new order.</div>
+    }
+    else
+    {
+        <div class="table-wrap"><table class="table">
+            <thead><tr><th>Order</th><th>Customer</th><th>Type and plan</th><th>City</th><th>Placed</th><th>Status</th><th></th></tr></thead>
+            <tbody>
+            @foreach (var o in Model.Items)
+            {
+                <tr>
+                    <td>@Ui.Id(o.OrderNo)</td>
+                    <td>@o.Customer.FullName</td>
+                    <td>@o.Plan.Name@(o.Quantity > 1 ? " × " + o.Quantity : "")</td>
+                    <td>@o.InstallCity.Name</td>
+                    <td>@Fmt.Date(o.PlacedOn)</td>
+                    <td>@Ui.Status(o.Status)</td>
+                    <td class="row-actions"><a asp-action="Details" asp-route-id="@o.Id">Open</a></td>
+                </tr>
+            }
+            </tbody></table></div>
+        <partial name="_Pager" model="(PagedBase)Model" />
+    }
+</div>

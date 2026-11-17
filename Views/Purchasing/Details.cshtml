@@ -1,0 +1,26 @@
+@model PurchaseOrder
+@{ ViewData["Title"] = "Purchase order " + Model.PoNumber; }
+<a class="back-link" asp-action="Index">@Ui.Icon("arrow-left", 14) Purchase orders</a>
+<div class="page-head">
+    <div><h1 class="page-title">@Model.PoNumber</h1><p class="page-sub">@Model.Vendor.Name · ordered @Fmt.Date(Model.OrderedOn) · @Ui.Status(Model.Status)</p></div>
+    <div class="page-actions">
+        @if (Model.Status == PurchaseStatus.Ordered)
+        {
+            <form asp-action="Receive" asp-route-id="@Model.Id" method="post"><button class="btn btn-primary" type="submit" data-busy="Updating stock">Receive and add to stock</button></form>
+            <form asp-action="Cancel" asp-route-id="@Model.Id" method="post"><button class="btn btn-danger-quiet" type="button" data-confirm="@Model.PoNumber will be cancelled. No stock is added." data-confirm-title="Cancel this purchase order?" data-confirm-verb="Cancel order">Cancel</button></form>
+        }
+    </div>
+</div>
+<div class="panel">
+    <div class="table-wrap"><table class="table">
+        <thead><tr><th>Equipment</th><th class="num">Quantity</th><th class="num">Unit cost</th><th class="num">Line total</th></tr></thead>
+        <tbody>
+        @foreach (var l in Model.Lines)
+        {
+            <tr><td>@l.Product.Name</td><td class="num">@l.Quantity</td><td class="num">@Fmt.Money(l.UnitCost)</td><td class="num">@Fmt.Money(l.Quantity * l.UnitCost)</td></tr>
+        }
+        <tr class="total-row"><td colspan="3">Total</td><td class="num">@Fmt.Money(Model.Lines.Sum(l => l.Quantity * l.UnitCost))</td></tr>
+        </tbody></table></div>
+</div>
+@if (!string.IsNullOrEmpty(Model.Notes)) { <p class="muted mt-3">@Model.Notes</p> }
+@if (Model.ReceivedOn != null) { <p class="muted mt-3">Received @Fmt.Date(Model.ReceivedOn).</p> }

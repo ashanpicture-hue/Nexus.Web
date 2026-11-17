@@ -1,0 +1,15 @@
+@model RetailShop
+@{ var editing = Model.Id != 0; ViewData["Title"] = editing ? "Edit shop" : "Add shop"; var cities = (List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>)ViewBag.Cities; }
+<a class="back-link" asp-action="Index">@Ui.Icon("arrow-left", 14) Retail shops</a>
+<div class="page-head"><h1 class="page-title">@ViewData["Title"]</h1></div>
+<form asp-action="@(editing ? "Edit" : "Create")" asp-route-id="@(editing ? Model.Id : (int?)null)" method="post" novalidate>
+    <partial name="_Summary" />
+    <div class="panel"><div class="panel-body"><div class="form-grid">
+        <div class="c-6"><label class="form-label" asp-for="Name">Shop name</label><input class="form-control" asp-for="Name" /><span asp-validation-for="Name" class="field-validation-error"></span></div>
+        <div class="c-6"><label class="form-label" asp-for="CityId">City</label><select class="form-select" asp-for="CityId" asp-items="cities"><option value="">Choose a city</option></select><span asp-validation-for="CityId" class="field-validation-error"></span></div>
+        <div class="c-8"><label class="form-label" asp-for="Address">Address</label><input class="form-control" asp-for="Address" /><span asp-validation-for="Address" class="field-validation-error"></span></div>
+        <div class="c-4"><label class="form-label" asp-for="Phone">Phone</label><input class="form-control mono" asp-for="Phone" type="tel" /></div>
+        <div><div class="form-check"><input class="form-check-input" type="checkbox" asp-for="IsActive" /><label class="form-check-label" asp-for="IsActive">Open for business</label></div></div>
+    </div>
+    <div class="form-actions"><button class="btn btn-primary" type="submit" data-busy="Saving">Save shop</button><a class="btn btn-quiet" asp-action="Index">Cancel</a></div></div></div>
+</form>

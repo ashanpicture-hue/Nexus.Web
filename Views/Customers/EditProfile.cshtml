@@ -1,0 +1,11 @@
+@model CustomerVm
+@{ ViewData["Title"] = "Contact details"; }
+<a class="back-link" asp-action="Profile">@Ui.Icon("arrow-left", 14) Contact details</a>
+<div class="page-head"><h1 class="page-title">Edit contact details</h1></div>
+<form asp-action="EditProfile" method="post" novalidate>
+    <partial name="_Summary" />
+    <div class="panel"><div class="panel-body">
+        <partial name="_CustomerFields" model="Model" />
+        <div class="form-actions"><button class="btn btn-primary" type="submit" data-busy="Saving">Save changes</button><a class="btn btn-quiet" asp-action="Profile">Cancel</a></div>
+    </div></div>
+</form>

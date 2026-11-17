@@ -1,0 +1,18 @@
+@model CustomerVm
+<div class="form-grid">
+    <div>
+        <span class="form-label d-block">Type</span>
+        <div class="choice">
+            <input type="radio" id="ck-1" name="Kind" value="1" checked="@(Model.Kind == CustomerKind.Individual)" /><label for="ck-1">Individual</label>
+            <input type="radio" id="ck-2" name="Kind" value="2" checked="@(Model.Kind == CustomerKind.Corporate)" /><label for="ck-2">Company</label>
+        </div>
+    </div>
+    <div class="c-6"><label class="form-label" asp-for="FullName">Full name</label><input class="form-control" asp-for="FullName" /><span asp-validation-for="FullName" class="field-validation-error"></span></div>
+    <div class="c-6"><label class="form-label" asp-for="CompanyName">Company name <span class="muted">(companies only)</span></label><input class="form-control" asp-for="CompanyName" /><span asp-validation-for="CompanyName" class="field-validation-error"></span></div>
+    <div class="c-6"><label class="form-label" asp-for="Phone">Phone</label><input class="form-control mono" asp-for="Phone" type="tel" /><span asp-validation-for="Phone" class="field-validation-error"></span></div>
+    <div class="c-6"><label class="form-label" asp-for="Email">Email</label><input class="form-control" asp-for="Email" type="email" /><span asp-validation-for="Email" class="field-validation-error"></span></div>
+    <div class="c-8"><label class="form-label" asp-for="Address">Address</label><input class="form-control" asp-for="Address" /><span asp-validation-for="Address" class="field-validation-error"></span></div>
+    <div class="c-4"><label class="form-label" asp-for="CityId">City</label><select class="form-select" asp-for="CityId" asp-items="Model.Cities"><option value="">Choose a city</option></select><span asp-validation-for="CityId" class="field-validation-error"></span></div>
+    <div class="c-6"><label class="form-label" asp-for="IdProofType">ID proof</label><input class="form-control" asp-for="IdProofType" placeholder="Passport, national ID, licence" /></div>
+    <div class="c-6"><label class="form-label" asp-for="IdProofNumber">ID number</label><input class="form-control mono" asp-for="IdProofNumber" /></div>
+</div>

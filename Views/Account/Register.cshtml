@@ -1,0 +1,83 @@
+@model RegisterVm
+@{
+    ViewData["Title"] = "Create an account";
+    Layout = "_BareLayout";
+}
+<div class="auth-split">
+    <section class="auth-side">
+        <a class="brand" asp-controller="Home" asp-action="Index">
+            <svg width="26" height="26" viewBox="0 0 26 26" fill="none" aria-hidden="true"><circle cx="5" cy="13" r="3.2" fill="currentColor"/><circle cx="21" cy="13" r="3.2" fill="currentColor"/><path d="M8.2 13h9.6" stroke="currentColor" stroke-width="2"/></svg>
+            <span>Nexus</span>
+        </a>
+        <div>
+            <h2>One account for every order and bill</h2>
+            <p>With an account you can apply for a connection, follow the order, and see your bills and payments.</p>
+        </div>
+        <span class="small">Nexus Communication System</span>
+    </section>
+    <section class="auth-form">
+        <div class="inner">
+            <h1>Create an account</h1>
+            <form asp-action="Register" method="post" novalidate>
+                <partial name="_Summary" />
+                <div class="form-grid">
+                    <div>
+                        <span class="form-label d-block">Applying as</span>
+                        <div class="choice">
+                            <input type="radio" id="kind-1" name="Kind" value="1" checked="@(Model.Kind == CustomerKind.Individual)" /><label for="kind-1">Individual</label>
+                            <input type="radio" id="kind-2" name="Kind" value="2" checked="@(Model.Kind == CustomerKind.Corporate)" /><label for="kind-2">Company</label>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="form-label" asp-for="FullName">Full name</label>
+                        <input class="form-control" asp-for="FullName" autocomplete="name" />
+                        <span asp-validation-for="FullName" class="field-validation-error"></span>
+                    </div>
+                    <div>
+                        <label class="form-label" asp-for="CompanyName">Company name <span class="muted">(companies only)</span></label>
+                        <input class="form-control" asp-for="CompanyName" autocomplete="organization" />
+                        <span asp-validation-for="CompanyName" class="field-validation-error"></span>
+                    </div>
+                    <div class="c-6">
+                        <label class="form-label" asp-for="Email">Email</label>
+                        <input class="form-control" asp-for="Email" type="email" autocomplete="email" />
+                        <span asp-validation-for="Email" class="field-validation-error"></span>
+                    </div>
+                    <div class="c-6">
+                        <label class="form-label" asp-for="Phone">Phone</label>
+                        <input class="form-control" asp-for="Phone" type="tel" autocomplete="tel" />
+                        <span asp-validation-for="Phone" class="field-validation-error"></span>
+                    </div>
+                    <div>
+                        <label class="form-label" asp-for="Address">Address</label>
+                        <input class="form-control" asp-for="Address" autocomplete="street-address" />
+                        <span asp-validation-for="Address" class="field-validation-error"></span>
+                    </div>
+                    <div>
+                        <label class="form-label" asp-for="CityId">City</label>
+                        <select class="form-select" asp-for="CityId" asp-items="Model.Cities"><option value="">Choose a city</option></select>
+                        <span asp-validation-for="CityId" class="field-validation-error"></span>
+                    </div>
+                    <div>
+                        <label class="form-label" asp-for="Username">Username</label>
+                        <input class="form-control" asp-for="Username" autocomplete="username" spellcheck="false" />
+                        <span asp-validation-for="Username" class="field-validation-error"></span>
+                    </div>
+                    <div class="c-6">
+                        <label class="form-label" asp-for="Password">Password</label>
+                        <input class="form-control" asp-for="Password" autocomplete="new-password" />
+                        <div class="hint">8 or more characters, with a letter and a digit</div>
+                        <span asp-validation-for="Password" class="field-validation-error"></span>
+                    </div>
+                    <div class="c-6">
+                        <label class="form-label" asp-for="ConfirmPassword">Confirm password</label>
+                        <input class="form-control" asp-for="ConfirmPassword" autocomplete="new-password" />
+                        <span asp-validation-for="ConfirmPassword" class="field-validation-error"></span>
+                    </div>
+                </div>
+                <button class="btn btn-primary w-100 mt-4" type="submit" data-busy="Creating account">Create account</button>
+            </form>
+            <p class="muted mt-4 mb-0">Already registered? <a asp-action="Login">Sign in</a></p>
+        </div>
+    </section>
+</div>

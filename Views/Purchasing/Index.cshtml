@@ -1,0 +1,25 @@
+@model Paged<PurchaseOrder>
+@{ ViewData["Title"] = "Purchase orders"; var status = (PurchaseStatus?)ViewBag.Status; }
+<div class="page-head"><div><h1 class="page-title">Purchase orders</h1><p class="page-sub">Equipment bought from vendors</p></div><div class="page-actions"><a class="btn btn-primary" asp-action="Create">@Ui.Icon("plus") New purchase order</a></div></div>
+<form method="get" class="filters">
+    <select class="form-select" name="status" aria-label="Status"><option value="">All statuses</option>@foreach (var s in Enum.GetValues<PurchaseStatus>()) { <option value="@((int)s)" selected="@(status == s)">@s.Label()</option> }</select>
+    <button class="btn btn-quiet" type="submit">Filter</button>
+    @if (status != null) { <a class="btn-link-plain small" asp-action="Index">Clear</a> }
+</form>
+<div class="panel">
+    @if (!Model.Items.Any()) { <div class="empty"><strong>No purchase orders</strong>Create one when stock runs low.</div> }
+    else
+    {
+        <div class="table-wrap"><table class="table">
+            <thead><tr><th>Number</th><th>Vendor</th><th>Ordered</th><th class="num">Units</th><th class="num">Cost</th><th>Status</th><th></th></tr></thead>
+            <tbody>
+            @foreach (var p in Model.Items)
+            {
+                <tr><td class="mono">@p.PoNumber</td><td>@p.Vendor.Name</td><td>@Fmt.Date(p.OrderedOn)</td><td class="num">@p.Lines.Sum(l => l.Quantity)</td>
+                    <td class="num">@Fmt.Money(p.Lines.Sum(l => l.Quantity * l.UnitCost))</td><td>@Ui.Status(p.Status)</td>
+                    <td class="row-actions"><a asp-action="Details" asp-route-id="@p.Id">Open</a></td></tr>
+            }
+            </tbody></table></div>
+        <partial name="_Pager" model="(PagedBase)Model" />
+    }
+</div>

@@ -1,0 +1,35 @@
+@model EmployeeVm
+@{ var editing = Model.Id != 0; ViewData["Title"] = editing ? "Edit employee" : "Add employee"; }
+<a class="back-link" asp-action="Index">@Ui.Icon("arrow-left", 14) Employees</a>
+<div class="page-head"><h1 class="page-title">@ViewData["Title"]</h1></div>
+<form asp-action="@(editing ? "Edit" : "Create")" asp-route-id="@(editing ? Model.Id : (int?)null)" method="post" novalidate>
+    <partial name="_Summary" />
+    <div class="panel"><div class="panel-body">
+        <div class="form-grid">
+            <div class="c-6"><label class="form-label" asp-for="FullName">Full name</label><input class="form-control" asp-for="FullName" /><span asp-validation-for="FullName" class="field-validation-error"></span></div>
+            <div class="c-6"><label class="form-label" asp-for="Username">Username</label><input class="form-control" asp-for="Username" spellcheck="false" autocomplete="off" /><span asp-validation-for="Username" class="field-validation-error"></span></div>
+            <div class="c-6"><label class="form-label" asp-for="Email">Email</label><input class="form-control" asp-for="Email" type="email" /><span asp-validation-for="Email" class="field-validation-error"></span></div>
+            <div class="c-6"><label class="form-label" asp-for="Phone">Phone</label><input class="form-control mono" asp-for="Phone" type="tel" /><span asp-validation-for="Phone" class="field-validation-error"></span></div>
+            <div><label class="form-label" asp-for="Address">Address</label><input class="form-control" asp-for="Address" /></div>
+            <div class="c-4">
+                <label class="form-label" asp-for="Role">Role</label>
+                <select class="form-select" asp-for="Role">@foreach (var r in Roles.EmployeeRoles) { <option value="@r" selected="@(Model.Role == r)">@(r == Roles.Retail ? "Retail employee" : r)</option> }</select>
+                <span asp-validation-for="Role" class="field-validation-error"></span>
+            </div>
+            <div class="c-4">
+                <label class="form-label" asp-for="RetailShopId">Retail shop</label>
+                <select class="form-select" asp-for="RetailShopId" asp-items="Model.Shops"><option value="">Not a retail employee</option></select>
+                <span asp-validation-for="RetailShopId" class="field-validation-error"></span>
+            </div>
+            <div class="c-4"><label class="form-label" asp-for="HireDate">Hire date</label><input class="form-control mono" asp-for="HireDate" type="date" value="@Model.HireDate.ToString("yyyy-MM-dd")" /></div>
+            <div class="c-6">
+                <label class="form-label" asp-for="Password">@(editing ? "New password" : "Password")</label>
+                <input class="form-control" asp-for="Password" autocomplete="new-password" />
+                <div class="hint">@(editing ? "Leave empty to keep the current password. " : "")8 or more characters, with a letter and a digit</div>
+                <span asp-validation-for="Password" class="field-validation-error"></span>
+            </div>
+            <div class="c-6 d-flex align-items-end"><div class="form-check mb-2"><input class="form-check-input" type="checkbox" asp-for="IsActive" /><label class="form-check-label" asp-for="IsActive">Can sign in</label></div></div>
+        </div>
+        <div class="form-actions"><button class="btn btn-primary" type="submit" data-busy="Saving">Save employee</button><a class="btn btn-quiet" asp-action="Index">Cancel</a></div>
+    </div></div>
+</form>

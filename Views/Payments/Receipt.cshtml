@@ -1,0 +1,23 @@
+@model Payment
+@{
+    ViewData["Title"] = "Receipt " + Model.ReceiptNo;
+    var c = Model.Bill.Connection;
+}
+<a class="back-link" asp-controller="Billing" asp-action="Details" asp-route-id="@Model.BillId">@Ui.Icon("arrow-left", 14) Bill</a>
+<div class="page-head"><h1 class="page-title">Receipt @Model.ReceiptNo</h1><div class="page-actions"><button type="button" class="btn btn-quiet" data-print>@Ui.Icon("printer") Print</button></div></div>
+<div class="doc">
+    <div class="doc-head">
+        <div><div class="doc-brand">Nexus</div><div class="muted small">Payment receipt</div></div>
+        <div class="text-md-end"><div class="mono fw-medium">@Model.ReceiptNo</div><div class="muted small">@Fmt.Date(Model.PaidOn)</div></div>
+    </div>
+    <dl class="kv kv-tight">
+        <dt>Received from</dt><dd>@c.Customer.FullName</dd>
+        <dt>Account</dt><dd>@Ui.Id(c.AccountId)</dd>
+        <dt>Against bill</dt><dd class="mono">@Model.Bill.BillNo</dd>
+        <dt>Paid by</dt><dd>@Model.Mode.Label()@(string.IsNullOrEmpty(Model.Reference) ? "" : ", ref " + Model.Reference)</dd>
+        <dt>Taken at</dt><dd>@(Model.RetailShop?.Name ?? "City office")</dd>
+        <dt>Received by</dt><dd>@ViewBag.ReceivedBy</dd>
+    </dl>
+    <table class="doc-lines mt-3"><tr class="grand"><td>Amount received</td><td>@Fmt.Money(Model.Amount)</td></tr>
+        <tr><td>Still due on this bill</td><td>@Fmt.Money(Model.Bill.Due)</td></tr></table>
+</div>

@@ -1,0 +1,34 @@
+@model ServiceOrder
+@{
+    // The order drawn as a wire: placed, feasibility check, decision, connected.
+    var s = Model.Status;
+    string St(int stage)
+    {
+        if (s == OrderStatus.Cancelled) return stage == 0 ? "is-done" : "is-todo";
+        var reached = s switch
+        {
+            OrderStatus.Placed => 0,
+            OrderStatus.UnderFeasibilityCheck => 1,
+            OrderStatus.Feasible => 2,
+            OrderStatus.NotFeasible => 2,
+            _ => 3
+        };
+        if (s == OrderStatus.NotFeasible && stage == 2) return "is-failed";
+        if (stage < reached) return "is-done";
+        if (stage == reached) return s == OrderStatus.ConnectionProvided ? "is-done" : "is-current";
+        return "is-todo";
+    }
+}
+@if (s == OrderStatus.Cancelled)
+{
+    <div class="note is-bad mb-4">This order was cancelled on @Fmt.Date(Model.StatusUpdatedOn).</div>
+}
+<ol class="wire">
+    <li class="@St(0)"><span class="wire-name">Placed</span><span class="wire-note">@Fmt.Date(Model.PlacedOn)</span></li>
+    <li class="@St(1)"><span class="wire-name">Feasibility check</span><span class="wire-note">Distance and server</span></li>
+    <li class="@St(2)">
+        <span class="wire-name">@(s == OrderStatus.NotFeasible ? "Not feasible" : "Feasible")</span>
+        <span class="wire-note">@(s == OrderStatus.NotFeasible ? "Cannot be connected at this address" : "Cleared for connection")</span>
+    </li>
+    <li class="@St(3)"><span class="wire-name">Connected</span><span class="wire-note">@(s == OrderStatus.ConnectionProvided ? "Live since " + Fmt.Date(Model.StatusUpdatedOn) : "Equipment issued, account id given")</span></li>
+</ol>

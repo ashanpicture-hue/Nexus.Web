@@ -1,0 +1,40 @@
+@model Paged<Bill>
+@{
+    ViewData["Title"] = User.IsInRole(Roles.Customer) ? "My bills" : "Bills";
+    var status = (BillStatus?)ViewBag.Status;
+    var overdue = (bool)ViewBag.Overdue;
+    var q = (string)ViewBag.Q;
+}
+<div class="page-head">
+    <div><h1 class="page-title">@ViewData["Title"]</h1><p class="page-sub">@Model.Total @(Model.Total == 1 ? "bill" : "bills")</p></div>
+    <div class="page-actions">@if (User.IsInRole(Roles.Accounts)) { <a class="btn btn-primary" asp-action="Pending">Bills to generate</a> }</div>
+</div>
+<form method="get" class="filters">
+    <div class="search"><span>@Ui.Icon("search", 15)</span><input class="form-control" type="search" name="q" value="@q" placeholder="Bill number, account id or customer" aria-label="Search bills" /></div>
+    <select class="form-select" name="status" aria-label="Status"><option value="">All statuses</option>@foreach (var s in Enum.GetValues<BillStatus>()) { <option value="@((int)s)" selected="@(status == s)">@s.Label()</option> }</select>
+    <div class="form-check ms-2"><input class="form-check-input" type="checkbox" id="overdue" name="overdue" value="true" checked="@overdue" /><label class="form-check-label" for="overdue">Overdue only</label></div>
+    <button class="btn btn-quiet" type="submit">Filter</button>
+    @if (status != null || overdue || !string.IsNullOrEmpty(q)) { <a class="btn-link-plain small" asp-action="Index">Clear</a> }
+</form>
+<div class="panel">
+    @if (!Model.Items.Any()) { <div class="empty"><strong>No bills found</strong>Change the filters.</div> }
+    else
+    {
+        <div class="table-wrap"><table class="table">
+            <thead><tr><th>Bill</th><th>Account</th><th>Customer</th><th>Issued</th><th>Due date</th><th class="num">Total</th><th class="num">Due</th><th>Status</th><th></th></tr></thead>
+            <tbody>
+            @foreach (var b in Model.Items)
+            {
+                var late = !b.CarriedForward && b.Due > 0 && b.DueDate < DateTime.Today;
+                <tr class="@(late ? "is-overdue" : "")">
+                    <td class="mono">@b.BillNo</td><td>@Ui.Id(b.Connection.AccountId)</td><td>@b.Connection.Customer.FullName</td>
+                    <td>@Fmt.Date(b.IssuedOn)</td><td>@Fmt.Date(b.DueDate)</td>
+                    <td class="num">@Fmt.Money(b.Total)</td><td class="num">@(b.CarriedForward ? "carried" : Fmt.Money(b.Due))</td>
+                    <td>@Ui.Status(b.Status)</td>
+                    <td class="row-actions"><a asp-action="Details" asp-route-id="@b.Id">Open</a></td>
+                </tr>
+            }
+            </tbody></table></div>
+        <partial name="_Pager" model="(PagedBase)Model" />
+    }
+</div>

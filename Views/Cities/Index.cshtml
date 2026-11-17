@@ -1,0 +1,15 @@
+@model List<City>
+@{ ViewData["Title"] = "Cities"; }
+<div class="page-head"><div><h1 class="page-title">Cities</h1><p class="page-sub">The 3-digit code becomes part of every account id in the city</p></div><div class="page-actions"><a class="btn btn-primary" asp-action="Create">@Ui.Icon("plus") Add city</a></div></div>
+<div class="panel">
+    <div class="table-wrap"><table class="table">
+        <thead><tr><th>Code</th><th>City</th><th></th></tr></thead>
+        <tbody>
+        @foreach (var c in Model)
+        {
+            <tr><td class="mono">@c.Code</td><td>@c.Name</td>
+                <td class="row-actions"><a asp-action="Edit" asp-route-id="@c.Id">Edit</a>
+                    <form asp-action="Delete" asp-route-id="@c.Id" method="post" class="d-inline"><button type="button" class="btn-link-plain text-danger" data-confirm="@c.Name will be deleted. Cities in use cannot be deleted." data-confirm-title="Delete this city?" data-confirm-verb="Delete city">Delete</button></form></td></tr>
+        }
+        </tbody></table></div>
+</div>

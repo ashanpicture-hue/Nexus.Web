@@ -1,0 +1,30 @@
+@model Paged<Payment>
+@{ ViewData["Title"] = User.IsInRole(Roles.Customer) ? "My payments" : "Payments"; }
+<div class="page-head"><div><h1 class="page-title">@ViewData["Title"]</h1><p class="page-sub">@Model.Total @(Model.Total == 1 ? "payment" : "payments")</p></div></div>
+@if (User.IsInRole(Roles.Retail) || User.IsInRole(Roles.Accounts))
+{
+    <form asp-action="Find" method="get" class="lookup mb-4">
+        <label for="pay-acc">Take a payment: account id from the customer's bill</label>
+        <div class="row-in">
+            <input id="pay-acc" class="form-control" name="accountId" data-id-input placeholder="B101000000000001" autocomplete="off" spellcheck="false" required />
+            <button class="btn btn-primary" type="submit">Find bill</button>
+        </div>
+    </form>
+}
+<div class="panel">
+    @if (!Model.Items.Any()) { <div class="empty"><strong>No payments yet</strong>Payments appear here as they are recorded.</div> }
+    else
+    {
+        <div class="table-wrap"><table class="table">
+            <thead><tr><th>Receipt</th><th>Date</th><th>Customer</th><th>Account</th><th>Mode</th><th>Taken at</th><th class="num">Amount</th><th></th></tr></thead>
+            <tbody>
+            @foreach (var p in Model.Items)
+            {
+                <tr><td class="mono">@p.ReceiptNo</td><td>@Fmt.Date(p.PaidOn)</td><td>@p.Bill.Connection.Customer.FullName</td><td>@Ui.Id(p.Bill.Connection.AccountId)</td>
+                    <td>@p.Mode.Label()</td><td>@(p.RetailShop?.Name ?? "City office")</td><td class="num">@Fmt.Money(p.Amount)</td>
+                    <td class="row-actions"><a asp-action="Receipt" asp-route-id="@p.Id">Receipt</a></td></tr>
+            }
+            </tbody></table></div>
+        <partial name="_Pager" model="(PagedBase)Model" />
+    }
+</div>

@@ -1,0 +1,4 @@
+@{
+    // Signed-in people get the app shell; everyone else gets the public layout.
+    Layout = User.Identity != null && User.Identity.IsAuthenticated ? "_AppLayout" : "_PublicLayout";
+}

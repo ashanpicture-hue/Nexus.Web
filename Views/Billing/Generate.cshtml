@@ -1,0 +1,64 @@
+@model BillFormVm
+@{
+    ViewData["Title"] = "Generate bill";
+    var c = Model.Connection;
+    var plan = c.Plan;
+    var hasUsage = plan.LocalRate != null || plan.StdRate != null || plan.MobileMsgRate != null;
+    var p = Model.Preview;
+}
+<a class="back-link" asp-controller="Connections" asp-action="Details" asp-route-id="@c.Id">@Ui.Icon("arrow-left", 14) Connection</a>
+<div class="page-head">
+    <div><div class="mb-2">@Ui.Id(c.AccountId)</div><h1 class="page-title">Generate bill</h1><p class="page-sub">@c.Customer.FullName · @plan.Name</p></div>
+</div>
+
+<form asp-action="Generate" method="post" novalidate>
+    <input type="hidden" asp-for="ConnectionId" />
+    <partial name="_Summary" />
+    <div class="row g-4">
+        <div class="col-lg-6">
+            <div class="panel"><div class="panel-body">
+                <div class="form-grid">
+                    <div>
+                        <label class="form-label" asp-for="PeriodStart">Period starts</label>
+                        <input class="form-control mono" asp-for="PeriodStart" type="date" value="@Model.PeriodStart.ToString("yyyy-MM-dd")" />
+                        <div class="hint">Covers @plan.ValidityMonths @(plan.ValidityMonths == 1 ? "month" : "months"), to @Fmt.Date(Model.PreviewPeriodEnd).</div>
+                        <span asp-validation-for="PeriodStart" class="field-validation-error"></span>
+                    </div>
+                    @if (hasUsage)
+                    {
+                        <div class="c-4"><label class="form-label" asp-for="LocalMinutes">Local minutes</label><input class="form-control mono" asp-for="LocalMinutes" type="number" step="0.1" min="0" inputmode="decimal" disabled="@(plan.LocalRate == null)" /><div class="hint">@Fmt.Rate(plan.LocalRate)</div></div>
+                        <div class="c-4"><label class="form-label" asp-for="StdMinutes">STD minutes</label><input class="form-control mono" asp-for="StdMinutes" type="number" step="0.1" min="0" inputmode="decimal" disabled="@(plan.StdRate == null)" /><div class="hint">@Fmt.Rate(plan.StdRate)</div></div>
+                        <div class="c-4"><label class="form-label" asp-for="MobileMsgMinutes">Messaging</label><input class="form-control mono" asp-for="MobileMsgMinutes" type="number" step="0.1" min="0" inputmode="decimal" disabled="@(plan.MobileMsgRate == null)" /><div class="hint">@Fmt.Rate(plan.MobileMsgRate)</div></div>
+                    }
+                    <div><label class="form-label" asp-for="Notes">Note on the bill <span class="muted">(optional)</span></label><input class="form-control" asp-for="Notes" /></div>
+                </div>
+            </div></div>
+            @if (Model.Outstanding > 0) { <div class="note is-warn">An unpaid balance of <strong class="mono">@Fmt.Money(Model.Outstanding)</strong> will be carried into this bill.</div> }
+        </div>
+
+        <div class="col-lg-6">
+            <div class="panel">
+                <div class="panel-head"><h2>This bill</h2><span class="muted small">Preview, nothing saved yet</span></div>
+                <div class="panel-body">
+                    <table class="doc-lines">
+                        <tr><td>Rental, @plan.Name</td><td>@Fmt.Money(p.PlanCharge)</td></tr>
+                        @if (hasUsage) { <tr><td>Call charges</td><td>@Fmt.Money(p.UsageCharge)</td></tr> }
+                        @if (p.ReplacementCharge > 0) { <tr><td>Equipment replacement</td><td>@Fmt.Money(p.ReplacementCharge)</td></tr> }
+                        @if (p.SecurityDepositCharge > 0) { <tr><td>Security deposit (refundable)</td><td>@Fmt.Money(p.SecurityDepositCharge)</td></tr> }
+                        @if (p.DiscountAmount > 0) { <tr><td>Bulk discount, @Fmt.Percent(c.DiscountPercent) of rental and deposit</td><td>@Fmt.Money(-p.DiscountAmount)</td></tr> }
+                        <tr><td>Subtotal</td><td>@Fmt.Money(p.Subtotal)</td></tr>
+                        <tr><td>Service tax</td><td>@Fmt.Money(p.TaxAmount)</td></tr>
+                        @if (p.PreviousDue > 0) { <tr><td>Previous balance</td><td>@Fmt.Money(p.PreviousDue)</td></tr> }
+                        <tr class="grand"><td>Total</td><td>@Fmt.Money(p.Total)</td></tr>
+                    </table>
+                    @if (Model.PendingCharges.Any()) { <p class="hint mt-3">Includes: @string.Join("; ", Model.PendingCharges.Select(x => x.Description))</p> }
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="form-actions">
+        <button class="btn btn-primary" type="submit" name="Intent" value="generate" data-busy="Generating">Generate bill</button>
+        <button class="btn btn-quiet" type="submit" name="Intent" value="preview">Recalculate</button>
+        <span class="hint mt-0">A saved bill cannot be edited.</span>
+    </div>
+</form>

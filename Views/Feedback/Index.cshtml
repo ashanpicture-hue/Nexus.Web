@@ -1,0 +1,19 @@
+@model Paged<Feedback>
+@{ ViewData["Title"] = "Feedback"; var avg = (double)ViewBag.Average; var count = (int)ViewBag.Count; }
+<div class="page-head"><div><h1 class="page-title">Customer feedback</h1><p class="page-sub">@count @(count == 1 ? "response" : "responses")@(count > 0 ? ", average " + avg.ToString("0.0") + " of 5" : "")</p></div></div>
+<div class="panel">
+    @if (!Model.Items.Any()) { <div class="empty"><strong>No feedback yet</strong>Customers can send it from their portal.</div> }
+    else
+    {
+        <div class="table-wrap"><table class="table">
+            <thead><tr><th>Date</th><th>Customer</th><th>Order</th><th>Rating</th><th>Comment</th></tr></thead>
+            <tbody>
+            @foreach (var f in Model.Items)
+            {
+                <tr><td>@Fmt.Date(f.CreatedOn)</td><td>@f.Customer.FullName</td><td>@(f.ServiceOrder != null ? Ui.Id(f.ServiceOrder.OrderNo) : (object)"general")</td>
+                    <td class="rating">@(new string('★', f.Rating))@(new string('☆', 5 - f.Rating))</td><td>@f.Comments</td></tr>
+            }
+            </tbody></table></div>
+        <partial name="_Pager" model="(PagedBase)Model" />
+    }
+</div>

@@ -1,0 +1,82 @@
+@model List<DiscountScheme>
+@{
+    ViewData["Title"] = "Rates and settings";
+    var s = (SettingsVm)ViewBag.Settings;
+    var d = (DepositsVm)ViewBag.Deposits;
+    string F(decimal v) => v.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture);
+}
+<div class="page-head"><div><h1 class="page-title">Rates and settings</h1><p class="page-sub">Charges that apply across every plan</p></div></div>
+
+<div class="row g-4">
+    <div class="col-lg-6">
+        <div class="panel">
+            <div class="panel-head"><h2>Billing and feasibility</h2></div>
+            <div class="panel-body">
+                <form asp-action="SaveSettings" method="post">
+                    <div class="form-grid">
+                        <div class="c-6"><label class="form-label" for="TaxPercent">Service tax (%)</label><input class="form-control mono" id="TaxPercent" name="TaxPercent" type="number" step="0.01" min="0" max="100" value="@F(s.TaxPercent)" /><div class="hint">Charged on the whole bill.</div></div>
+                        <div class="c-6"><label class="form-label" for="DueDays">Days until due</label><input class="form-control mono" id="DueDays" name="DueDays" type="number" min="1" max="120" value="@s.DueDays" /></div>
+                        <div class="c-4"><label class="form-label" for="MaxKmLandline">Landline limit (km)</label><input class="form-control mono" id="MaxKmLandline" name="MaxKmLandline" type="number" step="0.1" min="0" value="@F(s.MaxKmLandline)" /></div>
+                        <div class="c-4"><label class="form-label" for="MaxKmBroadband">Broadband limit (km)</label><input class="form-control mono" id="MaxKmBroadband" name="MaxKmBroadband" type="number" step="0.1" min="0" value="@F(s.MaxKmBroadband)" /></div>
+                        <div class="c-4"><label class="form-label" for="MaxKmDialUp">Dial-up limit (km)</label><input class="form-control mono" id="MaxKmDialUp" name="MaxKmDialUp" type="number" step="0.1" min="0" value="@F(s.MaxKmDialUp)" /></div>
+                    </div>
+                    <p class="hint">Distance from the exchange beyond which an order is not feasible.</p>
+                    <button class="btn btn-primary" type="submit">Save settings</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="panel">
+            <div class="panel-head"><h2>Security deposits</h2></div>
+            <div class="panel-body">
+                <form asp-action="SaveDeposits" method="post">
+                    <div class="form-grid">
+                        <div class="c-4"><label class="form-label" for="DialUp">Dial-up</label><div class="input-money"><input class="form-control" id="DialUp" name="DialUp" type="number" step="0.01" min="0" value="@F(d.DialUp)" /></div></div>
+                        <div class="c-4"><label class="form-label" for="Broadband">Broadband</label><div class="input-money"><input class="form-control" id="Broadband" name="Broadband" type="number" step="0.01" min="0" value="@F(d.Broadband)" /></div></div>
+                        <div class="c-4"><label class="form-label" for="Telephone">Landline</label><div class="input-money"><input class="form-control" id="Telephone" name="Telephone" type="number" step="0.01" min="0" value="@F(d.Telephone)" /></div></div>
+                    </div>
+                    <p class="hint">Refundable. Applies to connections made after the change.</p>
+                    <button class="btn btn-primary" type="submit">Save deposits</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="panel">
+    <div class="panel-head"><h2>Bulk discount tiers</h2></div>
+    <div class="panel-body pb-0"><p class="muted">The discount applies to the first rental and the security deposit when an order has this many connections. Tiers must not overlap. Leave the upper limit empty for no limit.</p></div>
+    <div class="table-wrap"><table class="table">
+        <thead><tr><th>Name</th><th>From</th><th>To</th><th>Discount (%)</th><th></th></tr></thead>
+        <tbody>
+        @foreach (var t in Model)
+        {
+            <tr>
+                <td colspan="4">
+                    <form asp-action="SaveScheme" asp-route-id="@t.Id" method="post" class="row g-2 align-items-center" id="scheme-@t.Id">
+                        <div class="col-4"><input class="form-control" name="Name" value="@t.Name" aria-label="Name" /></div>
+                        <div class="col-2"><input class="form-control mono" name="MinConnections" type="number" min="1" value="@t.MinConnections" aria-label="From" /></div>
+                        <div class="col-2"><input class="form-control mono" name="MaxConnections" type="number" min="1" value="@t.MaxConnections" aria-label="To" /></div>
+                        <div class="col-2"><input class="form-control mono" name="Percent" type="number" step="0.01" min="0" max="100" value="@F(t.Percent)" aria-label="Discount" /></div>
+                        <div class="col-2"><button class="btn btn-quiet btn-sm" type="submit">Save</button></div>
+                    </form>
+                </td>
+                <td class="row-actions">
+                    <form asp-action="DeleteScheme" asp-route-id="@t.Id" method="post" class="d-inline"><button type="button" class="btn-link-plain text-danger" data-confirm="The @t.Name tier will be deleted." data-confirm-title="Delete this tier?" data-confirm-verb="Delete tier">Delete</button></form>
+                </td>
+            </tr>
+        }
+        <tr>
+            <td colspan="5">
+                <form asp-action="SaveScheme" asp-route-id="0" method="post" class="row g-2 align-items-center">
+                    <div class="col-4"><input class="form-control" name="Name" placeholder="New tier name" aria-label="New tier name" required /></div>
+                    <div class="col-2"><input class="form-control mono" name="MinConnections" type="number" min="1" placeholder="From" aria-label="From" required /></div>
+                    <div class="col-2"><input class="form-control mono" name="MaxConnections" type="number" min="1" placeholder="To" aria-label="To" /></div>
+                    <div class="col-2"><input class="form-control mono" name="Percent" type="number" step="0.01" min="0" max="100" placeholder="%" aria-label="Discount" required /></div>
+                    <div class="col-2"><button class="btn btn-primary btn-sm" type="submit">Add tier</button></div>
+                </form>
+            </td>
+        </tr>
+        </tbody></table></div>
+</div>

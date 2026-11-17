@@ -1,0 +1,13 @@
+@model City
+@{ var editing = Model.Id != 0; ViewData["Title"] = editing ? "Edit city" : "Add city"; var locked = ViewBag.CodeLocked == true; }
+<a class="back-link" asp-action="Index">@Ui.Icon("arrow-left", 14) Cities</a>
+<div class="page-head"><h1 class="page-title">@ViewData["Title"]</h1></div>
+<form asp-action="@(editing ? "Edit" : "Create")" asp-route-id="@(editing ? Model.Id : (int?)null)" method="post" novalidate>
+    <partial name="_Summary" />
+    <div class="panel"><div class="panel-body"><div class="form-grid">
+        <div class="c-8"><label class="form-label" asp-for="Name">City name</label><input class="form-control" asp-for="Name" /><span asp-validation-for="Name" class="field-validation-error"></span></div>
+        <div class="c-4"><label class="form-label" asp-for="Code">Code</label><input class="form-control mono" asp-for="Code" maxlength="3" inputmode="numeric" readonly="@locked" />
+            <div class="hint">@(locked ? "Fixed, because connections in this city already carry it." : "Three digits.")</div><span asp-validation-for="Code" class="field-validation-error"></span></div>
+    </div>
+    <div class="form-actions"><button class="btn btn-primary" type="submit" data-busy="Saving">Save city</button><a class="btn btn-quiet" asp-action="Index">Cancel</a></div></div></div>
+</form>

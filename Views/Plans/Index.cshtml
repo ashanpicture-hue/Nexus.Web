@@ -1,0 +1,28 @@
+@model List<Plan>
+@{ ViewData["Title"] = "Plans"; var q = (string)ViewBag.Q; var type = (ConnectionType?)ViewBag.Type; }
+<div class="page-head"><div><h1 class="page-title">Plans</h1><p class="page-sub">@Model.Count plans and tariffs</p></div><div class="page-actions"><a class="btn btn-primary" asp-action="Create">@Ui.Icon("plus") Add plan</a></div></div>
+<form method="get" class="filters">
+    <div class="search"><span>@Ui.Icon("search", 15)</span><input class="form-control" type="search" name="q" value="@q" placeholder="Plan name or description" aria-label="Search plans" /></div>
+    <select class="form-select" name="type" aria-label="Type"><option value="">All types</option>@foreach (var t in Enum.GetValues<ConnectionType>()) { <option value="@((int)t)" selected="@(type == t)">@t.Label()</option> }</select>
+    <button class="btn btn-quiet" type="submit">Filter</button>
+    @if (!string.IsNullOrEmpty(q) || type != null) { <a class="btn-link-plain small" asp-action="Index">Clear</a> }
+</form>
+<div class="panel">
+    @if (!Model.Any()) { <div class="empty"><strong>No plans match</strong></div> }
+    else
+    {
+        <div class="table-wrap"><table class="table">
+            <thead><tr><th>Plan</th><th>Type</th><th>Covers</th><th class="num">Price</th><th>Status</th><th></th></tr></thead>
+            <tbody>
+            @foreach (var p in Model)
+            {
+                <tr><td>@p.Name@if (!string.IsNullOrEmpty(p.Description)) { <div class="muted small">@p.Description</div> }</td>
+                    <td>@p.ConnectionType.Label(), @p.Category.Label().ToLowerInvariant()</td>
+                    <td>@(p.ValidityMonths == 1 ? "1 month" : p.ValidityMonths + " months")@(p.Hours != null ? ", " + p.Hours + " h" : "")</td>
+                    <td class="num">@Fmt.Money(p.Price)</td><td>@Ui.Active(p.IsActive)</td>
+                    <td class="row-actions"><a asp-action="Edit" asp-route-id="@p.Id">Edit</a>
+                        <form asp-action="Delete" asp-route-id="@p.Id" method="post" class="d-inline"><button type="button" class="btn-link-plain text-danger" data-confirm="@p.Name will be deleted, or retired if orders or connections use it." data-confirm-title="Delete this plan?" data-confirm-verb="Delete plan">Delete</button></form></td></tr>
+            }
+            </tbody></table></div>
+    }
+</div>

@@ -1,0 +1,50 @@
+@model Customer
+@{
+    ViewData["Title"] = Model.FullName;
+    var orders = (List<ServiceOrder>)ViewBag.Orders;
+    var conns = (List<Connection>)ViewBag.Connections;
+}
+<a class="back-link" asp-action="Index">@Ui.Icon("arrow-left", 14) Customers</a>
+<div class="page-head">
+    <div><h1 class="page-title">@Model.FullName</h1><p class="page-sub">@Model.Kind.Label()@(Model.Kind == CustomerKind.Corporate ? ", " + Model.CompanyName : "")</p></div>
+    <div class="page-actions">
+        @if (User.IsInRole(Roles.Retail)) { <a class="btn btn-primary" asp-controller="Orders" asp-action="New" asp-route-customerId="@Model.Id">@Ui.Icon("plus") New order</a> }
+        @if (User.IsInRole(Roles.Retail) || User.IsInRole(Roles.Admin)) { <a class="btn btn-quiet" asp-action="Edit" asp-route-id="@Model.Id">@Ui.Icon("pencil") Edit</a> }
+    </div>
+</div>
+<div class="panel"><div class="panel-body">
+    <dl class="kv kv-tight">
+        <dt>Phone</dt><dd class="mono">@Model.Phone</dd>
+        <dt>Email</dt><dd>@(Model.Email ?? "none")</dd>
+        <dt>Address</dt><dd>@Model.Address, @Model.City.Name</dd>
+        <dt>ID proof</dt><dd>@(string.IsNullOrEmpty(Model.IdProofType) ? "none on file" : Model.IdProofType + ", " + Model.IdProofNumber)</dd>
+        <dt>Portal login</dt><dd>@(Model.User != null ? Model.User.Username : "Not created")</dd>
+        <dt>Registered</dt><dd>@Fmt.Date(Model.CreatedOn)</dd>
+    </dl>
+</div></div>
+<div class="panel">
+    <div class="panel-head"><h2>Connections</h2></div>
+    @if (!conns.Any()) { <div class="empty">No connections yet.</div> }
+    else
+    {
+        <div class="table-wrap"><table class="table"><tbody>
+        @foreach (var c in conns)
+        {
+            <tr><td>@Ui.Id(c.AccountId)</td><td>@c.Plan.Name</td><td>@Ui.Status(c.Status)</td><td class="row-actions"><a asp-controller="Connections" asp-action="Details" asp-route-id="@c.Id">Open</a></td></tr>
+        }
+        </tbody></table></div>
+    }
+</div>
+<div class="panel">
+    <div class="panel-head"><h2>Orders</h2></div>
+    @if (!orders.Any()) { <div class="empty">No orders yet.</div> }
+    else
+    {
+        <div class="table-wrap"><table class="table"><tbody>
+        @foreach (var o in orders)
+        {
+            <tr><td>@Ui.Id(o.OrderNo)</td><td>@o.Plan.Name</td><td>@Fmt.Date(o.PlacedOn)</td><td>@Ui.Status(o.Status)</td><td class="row-actions"><a asp-controller="Orders" asp-action="Details" asp-route-id="@o.Id">Open</a></td></tr>
+        }
+        </tbody></table></div>
+    }
+</div>

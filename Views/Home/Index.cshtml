@@ -1,0 +1,107 @@
+@model List<Plan>
+@{
+    ViewData["Title"] = "Telephone, dial-up and broadband";
+    var schemes = (List<DiscountScheme>)ViewBag.Schemes;
+    var deposits = (List<SecurityDepositRate>)ViewBag.Deposits;
+}
+<section class="hero">
+    <div class="wrap hero-grid">
+        <div>
+            <h1>Apply for a connection and follow it to the first bill</h1>
+            <p class="lede">Telephone, dial-up and broadband service from Nexus retail shops. Every order and every connection has an id you can check here at any time.</p>
+
+            <form class="lookup" asp-controller="Track" asp-action="Index" method="get">
+                <label for="lookup-id">Order id or account id</label>
+                <div class="row-in">
+                    <input id="lookup-id" class="form-control" type="text" name="id" data-id-input autocomplete="off" spellcheck="false" placeholder="D0000000001" required />
+                    <button class="btn btn-primary" type="submit">Check status</button>
+                </div>
+                <div class="formats">
+                    <span>Order: letter and 10 digits</span>
+                    <span>Account: letter and 15 digits</span>
+                </div>
+            </form>
+
+            <div class="hero-actions">
+                <a class="btn btn-quiet" asp-controller="Home" asp-action="Plans">See all plans</a>
+                <span class="muted small">Have an account? <a asp-controller="Account" asp-action="Login">Sign in</a></span>
+            </div>
+        </div>
+
+        <aside class="tariff" aria-label="Monthly rate card">
+            <div class="tariff-head"><strong>Monthly rate card</strong><span>billed after use</span></div>
+            @foreach (var group in Model.GroupBy(p => p.ConnectionType))
+            {
+                <div class="tariff-group">
+                    <h3>@group.Key.Label()</h3>
+                    @foreach (var p in group)
+                    {
+                        <div class="tariff-row">
+                            <span>
+                                @(p.SpeedKbps != null ? p.SpeedKbps + " Kbps unlimited" : p.Name.Replace(", monthly", ""))
+                                
+                            </span>
+                            <span class="price">@Fmt.Money(p.Price)<small> / mo</small></span>
+                        </div>
+                    }
+                </div>
+            }
+            <div class="tariff-foot">Calls on landline plans are charged by the minute. <a asp-controller="Home" asp-action="Plans">Full tariff</a></div>
+        </aside>
+    </div>
+</section>
+
+<section class="section">
+    <div class="wrap">
+        <h2>How an order moves</h2>
+        <p class="lede2">The same four steps for every connection type.</p>
+        <div class="sequence">
+            <div><span class="n">01</span><h3>Apply</h3><p>At a Nexus shop or online. You get an order id straight away.</p></div>
+            <div><span class="n">02</span><h3>Feasibility</h3><p>Our technicians check the distance to the exchange and, for internet, whether a server has room.</p></div>
+            <div><span class="n">03</span><h3>Connection</h3><p>Equipment is issued and the line gets its account id. Dial-up needs a Nexus landline, and we add one if you have none.</p></div>
+            <div><span class="n">04</span><h3>Bill</h3><p>Postpaid. The first bill carries the refundable security deposit, and unpaid amounts roll into the next bill.</p></div>
+        </div>
+    </div>
+</section>
+
+<section class="section">
+    <div class="wrap hero-grid">
+        <div>
+            <h2>Offices and bulk orders</h2>
+            <p class="lede2">Ordering ten or more connections at once reduces the first rental and the security deposit.</p>
+            <div class="panel">
+                <div class="table-wrap">
+                    <table class="table">
+                        <thead><tr><th>Connections</th><th class="num">Discount</th></tr></thead>
+                        <tbody>
+                        @foreach (var s in schemes)
+                        {
+                            <tr>
+                                <td>@(s.MaxConnections == null ? s.MinConnections + " or more" : s.MinConnections + " to " + s.MaxConnections)</td>
+                                <td class="num">@Fmt.Percent(s.Percent)</td>
+                            </tr>
+                        }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div>
+            <h2>Security deposit</h2>
+            <p class="lede2">Held per connection and returned when the connection is closed, after any unpaid balance.</p>
+            <div class="panel">
+                <div class="table-wrap">
+                    <table class="table">
+                        <thead><tr><th>Connection</th><th class="num">Deposit</th></tr></thead>
+                        <tbody>
+                        @foreach (var d in deposits)
+                        {
+                            <tr><td>@d.ConnectionType.Label()</td><td class="num">@Fmt.Money(d.Amount)</td></tr>
+                        }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

@@ -1,0 +1,10 @@
+@if (TempData["flash"] is string flashText)
+{
+    var isError = (TempData["flashKind"] as string) == "error";
+    <div class="flash-stack" role="status" aria-live="polite">
+        <div class="flash @(isError ? "is-error" : "")">
+            <span class="flash-text">@flashText</span>
+            <button type="button" aria-label="Dismiss">@Ui.Icon("x")</button>
+        </div>
+    </div>
+}

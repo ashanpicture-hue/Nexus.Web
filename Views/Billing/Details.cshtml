@@ -1,0 +1,72 @@
+@model Bill
+@{
+    ViewData["Title"] = "Bill " + Model.BillNo;
+    var c = Model.Connection;
+    var late = !Model.CarriedForward && Model.Due > 0 && Model.DueDate < DateTime.Today;
+    var canPay = (User.IsInRole(Roles.Retail) || User.IsInRole(Roles.Accounts)) && !Model.CarriedForward && Model.Due > 0;
+}
+<a class="back-link" asp-action="Index">@Ui.Icon("arrow-left", 14) Bills</a>
+<div class="page-head">
+    <h1 class="page-title">Bill @Model.BillNo</h1>
+    <div class="page-actions">
+        @if (canPay) { <a class="btn btn-primary" asp-controller="Payments" asp-action="Create" asp-route-billId="@Model.Id">Take payment</a> }
+        <button type="button" class="btn btn-quiet" data-print>@Ui.Icon("printer") Print</button>
+    </div>
+</div>
+
+@if (Model.CarriedForward) { <div class="note mb-4">The unpaid balance of this bill was carried into a later bill. Payments are taken on that bill.</div> }
+
+<div class="doc">
+    <div class="doc-head">
+        <div>
+            <div class="doc-brand">Nexus</div>
+            <div class="muted small">Communication System</div>
+        </div>
+        <div class="text-md-end">
+            <div class="mono fw-medium">@Model.BillNo</div>
+            <div class="muted small">Issued @Fmt.Date(Model.IssuedOn)</div>
+            <div class="small @(late ? "text-danger" : "muted")">Due @Fmt.Date(Model.DueDate)@(late ? ", overdue" : "")</div>
+        </div>
+    </div>
+    <div class="row g-4 mb-4">
+        <div class="col-sm-6"><div class="muted small">Billed to</div><div class="fw-medium">@c.Customer.FullName</div>@if (c.Customer.Kind == CustomerKind.Corporate) { <div>@c.Customer.CompanyName</div> }<div class="muted">@c.InstallAddress</div></div>
+        <div class="col-sm-6"><div class="muted small">Account</div><div>@Ui.Id(c.AccountId)</div><div class="muted mt-1">@c.Plan.Name</div><div class="muted">Period @Fmt.Date(Model.PeriodStart) to @Fmt.Date(Model.PeriodEnd)</div></div>
+    </div>
+    <table class="doc-lines">
+        <tr><td>Rental</td><td>@Fmt.Money(Model.PlanCharge)</td></tr>
+        @if (Model.UsageCharge > 0 || Model.LocalMinutes + Model.StdMinutes + Model.MobileMsgMinutes > 0)
+        {
+            <tr><td>Call charges</td><td>@Fmt.Money(Model.UsageCharge)</td></tr>
+            @if (Model.LocalMinutes > 0) { <tr class="sub"><td>@Fmt.Num(Model.LocalMinutes) local minutes at @Fmt.Rate(c.Plan.LocalRate)</td><td></td></tr> }
+            @if (Model.StdMinutes > 0) { <tr class="sub"><td>@Fmt.Num(Model.StdMinutes) STD minutes at @Fmt.Rate(c.Plan.StdRate)</td><td></td></tr> }
+            @if (Model.MobileMsgMinutes > 0) { <tr class="sub"><td>@Fmt.Num(Model.MobileMsgMinutes) messaging minutes at @Fmt.Rate(c.Plan.MobileMsgRate)</td><td></td></tr> }
+        }
+        @if (Model.ReplacementCharge > 0) { <tr><td>Equipment replacement</td><td>@Fmt.Money(Model.ReplacementCharge)</td></tr> }
+        @if (Model.SecurityDepositCharge > 0) { <tr><td>Security deposit (refundable)</td><td>@Fmt.Money(Model.SecurityDepositCharge)</td></tr> }
+        @if (Model.DiscountAmount > 0) { <tr><td>Bulk discount</td><td>@Fmt.Money(-Model.DiscountAmount)</td></tr> }
+        <tr><td>Subtotal</td><td>@Fmt.Money(Model.Subtotal)</td></tr>
+        <tr><td>Service tax @Fmt.Percent(Model.TaxPercent)</td><td>@Fmt.Money(Model.TaxAmount)</td></tr>
+        @if (Model.PreviousDue > 0) { <tr><td>Previous balance</td><td>@Fmt.Money(Model.PreviousDue)</td></tr> }
+        <tr class="grand"><td>Total</td><td>@Fmt.Money(Model.Total)</td></tr>
+        <tr><td>Paid</td><td>@Fmt.Money(Model.AmountPaid)</td></tr>
+        <tr class="grand"><td>@(Model.CarriedForward ? "Carried forward" : "Due")</td><td>@Fmt.Money(Model.Due)</td></tr>
+    </table>
+    @if (!string.IsNullOrEmpty(Model.Notes)) { <p class="muted mt-3 mb-0">@Model.Notes</p> }
+</div>
+
+<div class="panel no-print mt-4 doc-width">
+    <div class="panel-head"><h2>Payments</h2>@Ui.Status(Model.Status)</div>
+    @if (!Model.Payments.Any()) { <div class="empty">No payment recorded yet.</div> }
+    else
+    {
+        <div class="table-wrap"><table class="table">
+            <thead><tr><th>Receipt</th><th>Paid</th><th>Mode</th><th>Taken at</th><th class="num">Amount</th><th></th></tr></thead>
+            <tbody>
+            @foreach (var p in Model.Payments.OrderBy(p => p.PaidOn))
+            {
+                <tr><td class="mono">@p.ReceiptNo</td><td>@Fmt.Date(p.PaidOn)</td><td>@p.Mode.Label()</td><td>@(p.RetailShop?.Name ?? "City office")</td><td class="num">@Fmt.Money(p.Amount)</td>
+                    <td class="row-actions"><a asp-controller="Payments" asp-action="Receipt" asp-route-id="@p.Id">Receipt</a></td></tr>
+            }
+            </tbody></table></div>
+    }
+</div>
