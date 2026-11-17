@@ -7,24 +7,19 @@ using Nexus.Web.ViewModels;
 
 namespace Nexus.Web.Controllers;
 
-/// <summary>
-/// Advanced search of orders or connections by id, name, connection type, date range and contact number.
-/// Staff search everything their role allows; customers search only their own records.
-/// </summary>
 public class SearchController : AppController
 {
     public SearchController(AppDbContext db, CurrentUser me) : base(db, me) { }
 
     public async Task<IActionResult> Index(SearchVm vm)
     {
-        // The form has no submit flag of its own: any filter counts as a search.
         vm.Submitted = !string.IsNullOrWhiteSpace(vm.Id) || !string.IsNullOrWhiteSpace(vm.Name) ||
                        !string.IsNullOrWhiteSpace(vm.Phone) || vm.Type != null || vm.From != null || vm.To != null;
         if (!vm.Submitted) return View(vm);
 
         var id = IdFormat.Normalize(vm.Id);
         var phone = NormalizePhone(vm.Phone);
-        var to = vm.To?.Date.AddDays(1);   // include the whole last day
+        var to = vm.To?.Date.AddDays(1);
 
         if (vm.Target == "connections")
         {

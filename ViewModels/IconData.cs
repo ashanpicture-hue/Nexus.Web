@@ -1,6 +1,5 @@
 namespace Nexus.Web.ViewModels;
 
-/// <summary>Lucide line icons (ISC licence), one set, 1.5 stroke. Generated from lucide-static.</summary>
 public static class IconData
 {
     public static readonly Dictionary<string, string> Paths = new()

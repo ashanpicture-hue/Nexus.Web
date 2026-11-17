@@ -4,7 +4,6 @@ using Nexus.Web.Models;
 
 namespace Nexus.Web.Services;
 
-/// <summary>Creating connections from feasible orders and managing them afterwards.</summary>
 public class ConnectionService
 {
     private readonly AppDbContext _db;
@@ -17,12 +16,7 @@ public class ConnectionService
         c.Events.Add(new ConnectionEvent { Event = evt, Detail = detail, ByUserId = userId, At = DateTime.Now });
     }
 
-    /// <summary>
-    /// Turns a feasible order into live connections. An order for N connections creates N accounts.
-    /// A dial-up order without an existing landline also creates a telephone connection for each,
-    /// and links the dial-up account to it. Equipment is issued from stock and stock is reduced.
-    /// </summary>
-    public async Task<(List<Connection> Created, string Error)> ProvisionAsync(
+public async Task<(List<Connection> Created, string Error)> ProvisionAsync(
         int orderId, int? productId, int? landlineProductId, string serialNumbers, int userId)
     {
         var order = await _db.ServiceOrders
@@ -34,7 +28,6 @@ public class ConnectionService
         var needsLandline = order.ConnectionType == ConnectionType.DialUp && !order.HasExistingLandline;
         var qty = order.Quantity;
 
-        // ---- Check the equipment is available before changing anything ----------------------
         Product mainProduct = null, landlineProduct = null;
         var mainId = productId ?? order.ProductId;
         if (mainId != null)
@@ -55,7 +48,6 @@ public class ConnectionService
         var deposits = await _db.DepositRates.AsNoTracking().ToListAsync();
         decimal DepositFor(ConnectionType t) => deposits.FirstOrDefault(d => d.ConnectionType == t)?.Amount ?? 0m;
 
-        // One serial per line, matched to units in order. Blank lines are allowed.
         var serials = (serialNumbers ?? "")
             .Split('\n', StringSplitOptions.RemoveEmptyEntries)
             .Select(s => s.Trim()).Where(s => s.Length > 0).ToList();
@@ -133,12 +125,7 @@ public class ConnectionService
         };
     }
 
-    /// <summary>
-    /// Active to temporarily inactive, temporarily inactive back to active,
-    /// or either to permanently inactive (final). Permanent closure works out the deposit refund
-    /// after any unpaid balance.
-    /// </summary>
-    public async Task<string> ChangeStatusAsync(int connectionId, ConnectionStatus target, string reason, int userId)
+public async Task<string> ChangeStatusAsync(int connectionId, ConnectionStatus target, string reason, int userId)
     {
         var c = await _db.Connections.Include(x => x.Bills).Include(x => x.Events)
             .FirstOrDefaultAsync(x => x.Id == connectionId);
@@ -181,11 +168,7 @@ public class ConnectionService
         return null;
     }
 
-    /// <summary>
-    /// Swaps a unit for a new one from stock. When the customer spoiled the old unit,
-    /// its replacement charge waits on the connection and goes onto the next bill.
-    /// </summary>
-    public async Task<string> ReplaceEquipmentAsync(int connectionId, int newProductId, string serial,
+public async Task<string> ReplaceEquipmentAsync(int connectionId, int newProductId, string serial,
         bool damagedByCustomer, int userId)
     {
         var c = await _db.Connections.Include(x => x.Equipment).ThenInclude(e => e.Product)

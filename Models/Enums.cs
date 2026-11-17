@@ -2,27 +2,23 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Nexus.Web.Models;
 
-// ---------------------------------------------------------------------------
-// Roles. Strings so they can be used directly in [Authorize(Roles = ...)].
-// ---------------------------------------------------------------------------
 public static class Roles
 {
-    public const string Admin = "Admin";           // Manager: employees, plans, stock, vendors, shops
-    public const string Accounts = "Accounts";     // Bills and charges
-    public const string Technical = "Technical";   // Feasibility, connections, equipment
-    public const string Retail = "Retail";         // Retail outlet employee: places orders, takes payments
-    public const string Customer = "Customer";     // Self-service portal
+    public const string Admin = "Admin";
+    public const string Accounts = "Accounts";
+    public const string Technical = "Technical";
+    public const string Retail = "Retail";
+    public const string Customer = "Customer"
 
     public const string Staff = "Admin,Accounts,Technical,Retail";
     public static readonly string[] EmployeeRoles = { Admin, Accounts, Technical, Retail };
 }
 
-// Connection types. The first letter of every order id and account id is the type code.
 public enum ConnectionType
 {
-    [Display(Name = "Dial-up")] DialUp = 1,       // D
-    [Display(Name = "Broadband")] Broadband = 2,  // B
-    [Display(Name = "Telephone")] Telephone = 3   // T (landline only)
+    [Display(Name = "Dial-up")] DialUp = 1,
+    [Display(Name = "Broadband")] Broadband = 2,
+    [Display(Name = "Telephone")] Telephone = 3
 }
 
 public enum PlanCategory
@@ -99,7 +95,6 @@ public enum OrderChannel
     [Display(Name = "Online")] Online = 2
 }
 
-// What a feasibility check was run for.
 public enum FeasibilitySubject
 {
     [Display(Name = "Landline")] Landline = 1,

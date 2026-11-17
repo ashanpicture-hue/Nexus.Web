@@ -10,7 +10,6 @@ using Nexus.Web.Services;
 
 namespace Nexus.Web.ViewModels;
 
-/// <summary>Number and date formats used on every screen, so figures always look the same.</summary>
 public static class Fmt
 {
     private static readonly CultureInfo Inv = CultureInfo.InvariantCulture;
@@ -24,7 +23,6 @@ public static class Fmt
 
 public static class EnumExt
 {
-    /// <summary>Reads the [Display(Name)] text of an enum value.</summary>
     public static string Label(this Enum value)
     {
         var member = value.GetType().GetMember(value.ToString()).FirstOrDefault();
@@ -36,7 +34,6 @@ public static class EnumExt
         Enum.GetValues<T>().Select(v => new SelectListItem(v.Label(), Convert.ToInt32(v).ToString(), selected.HasValue && selected.Value.Equals(v))).ToList();
 }
 
-/// <summary>Small HTML building blocks shared by the views: icons, status dots and id tags.</summary>
 public static class Ui
 {
     public static IHtmlContent Icon(string name, int size = 16)
@@ -45,7 +42,6 @@ public static class Ui
         return new HtmlString($"<svg class=\"ic\" width=\"{size}\" height=\"{size}\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\">{inner}</svg>");
     }
 
-    /// <summary>The signature element: an id set like a cable label, chunked so it can be read aloud and copied.</summary>
     public static IHtmlContent Id(string id)
     {
         if (string.IsNullOrEmpty(id)) return HtmlString.Empty;
@@ -90,7 +86,6 @@ public static class Ui
     public static IHtmlContent Active(bool active) => Dot(active ? "green" : "muted", active ? "Active" : "Retired");
 }
 
-/// <summary>One page of a list.</summary>
 public abstract class PagedBase
 {
     public int Page { get; set; } = 1;

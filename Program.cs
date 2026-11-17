@@ -8,11 +8,9 @@ using Nexus.Web.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// ---- Database: SQL Server through EF Core ------------------------------------------------
 builder.Services.AddDbContext<AppDbContext>(o =>
     o.UseSqlServer(builder.Configuration.GetConnectionString("Default")));
 
-// ---- Application services ------------------------------------------------------------------
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<CurrentUser>();
 builder.Services.AddScoped<SettingsService>();
@@ -22,10 +20,8 @@ builder.Services.AddScoped<OrderService>();
 builder.Services.AddScoped<ConnectionService>();
 builder.Services.AddScoped<BillingService>();
 
-// ---- MVC. Every POST is checked for an anti-forgery token. ----------------------------------
 builder.Services.AddControllersWithViews(o => o.Filters.Add(new AutoValidateAntiforgeryTokenAttribute()));
 
-// ---- Sign-in by cookie. Everything needs a signed-in user unless marked [AllowAnonymous]. ---
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(o =>
     {
@@ -41,12 +37,10 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
 builder.Services.AddAuthorization(o =>
     o.FallbackPolicy = new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build());
 
-// ---- Uploads: address proofs and forms are capped at a few megabytes. -----------------------
 builder.Services.Configure<FormOptions>(o => o.MultipartBodyLengthLimit = 16 * 1024 * 1024);
 
 var app = builder.Build();
 
-// Numbers and dates are always read and written the same way, whatever the server's regional settings.
 var inv = new System.Globalization.CultureInfo("en-US");
 app.UseRequestLocalization(new RequestLocalizationOptions
 {
@@ -61,7 +55,6 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
-// ---- Security headers. All scripts and styles are local files, so the policy can be strict. --
 app.Use(async (ctx, next) =>
 {
     var h = ctx.Response.Headers;
@@ -81,7 +74,6 @@ app.UseAuthorization();
 
 app.MapControllerRoute(name: "default", pattern: "{controller=Home}/{action=Index}/{id?}");
 
-// ---- Create the database and load starter data on first run. --------------------------------
 using (var scope = app.Services.CreateScope())
 {
     await DbSeeder.RunAsync(scope.ServiceProvider);

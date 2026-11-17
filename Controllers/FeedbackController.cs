@@ -8,7 +8,6 @@ using Nexus.Web.ViewModels;
 
 namespace Nexus.Web.Controllers;
 
-/// <summary>Customers leave feedback on their orders; the Admin reads it.</summary>
 public class FeedbackController : AppController
 {
     public FeedbackController(AppDbContext db, CurrentUser me) : base(db, me) { }

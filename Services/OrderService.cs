@@ -4,7 +4,6 @@ using Nexus.Web.Models;
 
 namespace Nexus.Web.Services;
 
-/// <summary>What a person fills in to apply for a connection.</summary>
 public class PlaceOrderRequest
 {
     public int CustomerId { get; set; }
@@ -31,7 +30,6 @@ public class OrderResult
     public bool Ok => Errors.Count == 0;
 }
 
-/// <summary>Placing orders and recording feasibility checks.</summary>
 public class OrderService
 {
     private readonly AppDbContext _db;
@@ -44,8 +42,7 @@ public class OrderService
         _db = db; _seq = seq; _settings = settings; _files = files;
     }
 
-    /// <summary>The kind of equipment each connection type is delivered with.</summary>
-    public static bool ProductFits(ConnectionType type, ProductCategory cat) => type switch
+public static bool ProductFits(ConnectionType type, ProductCategory cat) => type switch
     {
         ConnectionType.DialUp => cat == ProductCategory.Modem,
         ConnectionType.Broadband => cat == ProductCategory.Modem || cat == ProductCategory.Router,
@@ -56,7 +53,6 @@ public class OrderService
     {
         var result = new OrderResult();
 
-        // ---- Validate the request against the master data -----------------------------------
         var customer = await _db.Customers.FirstOrDefaultAsync(c => c.Id == r.CustomerId);
         if (customer == null) { result.Errors.Add("Customer not found"); return result; }
 
@@ -80,7 +76,6 @@ public class OrderService
         {
             if (r.HasExistingLandline)
             {
-                // Dial-up needs a Nexus landline. Verify the one the customer quotes.
                 var acc = IdFormat.Normalize(r.ExistingLandlineAccountId);
                 r.ExistingLandlineAccountId = acc;
                 var landline = await _db.Connections.FirstOrDefaultAsync(c => c.AccountId == acc);
@@ -115,7 +110,6 @@ public class OrderService
 
         if (!result.Ok) return result;
 
-        // ---- Create the order ---------------------------------------------------------------
         var schemes = await _db.DiscountSchemes.AsNoTracking().ToListAsync();
         var order = new ServiceOrder
         {
@@ -140,8 +134,7 @@ public class OrderService
         _db.ServiceOrders.Add(order);
         await _db.SaveChangesAsync();
 
-        // ---- File the paperwork by year and area --------------------------------------------
-        foreach (var (kind, file) in r.Documents)
+foreach (var (kind, file) in r.Documents)
         {
             if (file == null || file.Length == 0) continue;
             var path = await _files.SaveAsync(file, order.PlacedOn.Year, city.Code, order.OrderNo);
@@ -161,11 +154,7 @@ public class OrderService
         return result;
     }
 
-    /// <summary>
-    /// Records a feasibility check for one subject (landline or internet) and moves the order
-    /// to Feasibility check, Feasible or Not feasible. A later check of the same subject replaces an earlier one.
-    /// </summary>
-    public async Task<string> RecordFeasibilityAsync(int orderId, FeasibilitySubject subject,
+public async Task<string> RecordFeasibilityAsync(int orderId, FeasibilitySubject subject,
         decimal distanceKm, bool serverAvailable, string remarks, int userId)
     {
         var order = await _db.ServiceOrders.Include(o => o.FeasibilityChecks).FirstOrDefaultAsync(o => o.Id == orderId);
@@ -210,8 +199,7 @@ public class OrderService
         return null;
     }
 
-    /// <summary>Marks an order as being looked at by the technical team.</summary>
-    public async Task<string> StartCheckAsync(int orderId)
+public async Task<string> StartCheckAsync(int orderId)
     {
         var order = await _db.ServiceOrders.FirstOrDefaultAsync(o => o.Id == orderId);
         if (order == null) return "Order not found";

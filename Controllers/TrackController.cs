@@ -8,18 +8,13 @@ using Nexus.Web.ViewModels;
 
 namespace Nexus.Web.Controllers;
 
-/// <summary>
-/// Look up an order by its order id, or a connection by its account id. Open to everyone,
-/// and deliberately limited to status information: no names, phone numbers or addresses.
-/// </summary>
 [AllowAnonymous]
 public class TrackController : AppController
 {
     private readonly BillingService _billing;
     public TrackController(AppDbContext db, CurrentUser me, BillingService billing) : base(db, me) { _billing = billing; }
 
-    /// <summary>One box for both: the id says which it is (11 characters for an order, 16 for an account).</summary>
-    public async Task<IActionResult> Index(string id)
+public async Task<IActionResult> Index(string id)
     {
         if (string.IsNullOrWhiteSpace(id)) return View("Index", new TrackVm());
 
@@ -39,7 +34,6 @@ public class TrackController : AppController
 
     private async Task<IActionResult> OrderResult(string orderNo)
     {
-        // Signed-in people who may see the record go straight to the full page.
         if (Me.IsAuthenticated)
         {
             var mine = await Db.ServiceOrders.AsNoTracking().ForUser(Me).FirstOrDefaultAsync(o => o.OrderNo == orderNo);

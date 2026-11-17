@@ -9,10 +9,6 @@ using Nexus.Web.ViewModels;
 
 namespace Nexus.Web.Controllers;
 
-/// <summary>
-/// Orders for connections. Retail employees place walk-in orders, customers apply from the portal,
-/// the technical team checks feasibility and connects, everyone with access can follow the status.
-/// </summary>
 public class OrdersController : AppController
 {
     private readonly OrderService _orders;
@@ -25,7 +21,6 @@ public class OrdersController : AppController
         _orders = orders; _connections = connections; _files = files;
     }
 
-    // ------------------------------------------------------------------ list and details
     public async Task<IActionResult> Index(OrderStatus? status, string q, int page = 1)
     {
         var query = Db.ServiceOrders.AsNoTracking().ForUser(Me)
@@ -68,9 +63,7 @@ public class OrdersController : AppController
             .FirstOrDefaultAsync(o => o.Id == id);
     }
 
-    // ------------------------------------------------------------------ placing an order
-    /// <summary>Retail employee: order for a walk-in customer chosen on the previous screen.</summary>
-    [Authorize(Roles = Roles.Retail)]
+[Authorize(Roles = Roles.Retail)]
     public async Task<IActionResult> New(int? customerId)
     {
         if (customerId == null) return RedirectToAction("Pick", "Customers");
@@ -95,8 +88,7 @@ public class OrdersController : AppController
         return await SubmitAsync(vm, vm.CustomerId, OrderChannel.RetailShop, Me.ShopId);
     }
 
-    /// <summary>Customer: apply from the portal for oneself.</summary>
-    [Authorize(Roles = Roles.Customer)]
+[Authorize(Roles = Roles.Customer)]
     public async Task<IActionResult> Apply()
     {
         var customer = await Db.Customers.AsNoTracking().FirstOrDefaultAsync(c => c.Id == Me.CustomerId);
@@ -112,7 +104,6 @@ public class OrdersController : AppController
     [HttpPost, Authorize(Roles = Roles.Customer)]
     public async Task<IActionResult> Apply(OrderFormVm vm)
     {
-        // The customer id comes from the sign-in, never from the posted form.
         return await SubmitAsync(vm, Me.CustomerId ?? -1, OrderChannel.Online, null);
     }
 
@@ -167,8 +158,7 @@ public class OrdersController : AppController
         return vm;
     }
 
-    // ------------------------------------------------------------------ technical team actions
-    [HttpPost, Authorize(Roles = Roles.Technical)]
+[HttpPost, Authorize(Roles = Roles.Technical)]
     public async Task<IActionResult> StartCheck(int id)
     {
         var err = await _orders.StartCheckAsync(id);
@@ -198,11 +188,9 @@ public class OrdersController : AppController
         return RedirectToAction(nameof(Details), new { id = vm.OrderId });
     }
 
-    // ------------------------------------------------------------------ cancel and documents
-    [HttpPost, Authorize(Roles = Roles.Retail + "," + Roles.Customer + "," + Roles.Admin)]
+[HttpPost, Authorize(Roles = Roles.Retail + "," + Roles.Customer + "," + Roles.Admin)]
     public async Task<IActionResult> Cancel(int id, string reason)
     {
-        // Retail and customers can only touch orders inside their own scope.
         var visible = await Db.ServiceOrders.AsNoTracking().ForUser(Me).AnyAsync(o => o.Id == id);
         if (!visible) return NotFound();
         var err = await _orders.CancelAsync(id, reason);

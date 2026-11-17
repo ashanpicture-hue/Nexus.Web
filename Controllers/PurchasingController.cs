@@ -8,7 +8,6 @@ using Nexus.Web.ViewModels;
 
 namespace Nexus.Web.Controllers;
 
-/// <summary>Purchase orders to equipment vendors. Receiving one adds the units to stock.</summary>
 [Authorize(Roles = Roles.Admin)]
 public class PurchasingController : AppController
 {

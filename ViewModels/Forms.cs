@@ -5,7 +5,6 @@ using Nexus.Web.Services;
 
 namespace Nexus.Web.ViewModels;
 
-// ---------------------------------------------------------------- sign in and accounts
 public class LoginVm
 {
     [Required(ErrorMessage = "Enter your username")] public string Username { get; set; }
@@ -38,7 +37,6 @@ public class ChangePasswordVm
     public string Repeat { get; set; }
 }
 
-// ---------------------------------------------------------------- customers
 public class CustomerVm
 {
     public int Id { get; set; }
@@ -52,7 +50,6 @@ public class CustomerVm
     [StringLength(40), Display(Name = "ID proof type")] public string IdProofType { get; set; }
     [StringLength(60), Display(Name = "ID proof number")] public string IdProofNumber { get; set; }
 
-    // Optional portal login, offered when a retail employee registers a walk-in customer.
     [Display(Name = "Create a portal login")] public bool CreateLogin { get; set; }
     public string Username { get; set; }
     [DataType(DataType.Password)] public string Password { get; set; }
@@ -60,7 +57,6 @@ public class CustomerVm
     public List<SelectListItem> Cities { get; set; } = new();
 }
 
-// ---------------------------------------------------------------- orders
 public class OrderFormVm
 {
     public int CustomerId { get; set; }
@@ -78,7 +74,6 @@ public class OrderFormVm
     public IFormFile AddressProof { get; set; }
     public IFormFile ApplicationForm { get; set; }
 
-    // Lists for the form (not posted back).
     public List<Plan> Plans { get; set; } = new();
     public List<Product> Products { get; set; } = new();
     public List<City> Cities { get; set; } = new();
@@ -120,7 +115,6 @@ public class ReplaceEquipmentVm
     public bool DamagedByCustomer { get; set; }
 }
 
-// ---------------------------------------------------------------- billing
 public class BillFormVm
 {
     public int ConnectionId { get; set; }
@@ -131,7 +125,6 @@ public class BillFormVm
     [StringLength(300)] public string Notes { get; set; }
     public string Intent { get; set; }
 
-    // For display and preview.
     public Connection Connection { get; set; }
     public BillResult Preview { get; set; }
     public DateTime PreviewPeriodEnd { get; set; }
@@ -148,7 +141,6 @@ public class PaymentVm
     [DataType(DataType.Date), Display(Name = "Paid on")] public DateTime PaidOn { get; set; } = DateTime.Today;
 }
 
-// ---------------------------------------------------------------- admin
 public class EmployeeVm
 {
     public int Id { get; set; }
@@ -206,10 +198,9 @@ public class FeedbackVm
     public List<ServiceOrder> Orders { get; set; } = new();
 }
 
-// ---------------------------------------------------------------- search
 public class SearchVm
 {
-    public string Target { get; set; } = "orders";           // orders | connections
+    public string Target { get; set; } = "orders";
     [Display(Name = "Order or account id")] public string Id { get; set; }
     public string Name { get; set; }
     public ConnectionType? Type { get; set; }
@@ -221,7 +212,6 @@ public class SearchVm
     public List<Connection> Connections { get; set; } = new();
 }
 
-// ---------------------------------------------------------------- tracking (public)
 public class TrackVm
 {
     public string Query { get; set; }

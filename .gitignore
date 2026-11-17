@@ -3,3 +3,5 @@ obj/
 node_modules/
 App_Data/
 .vs/
+.skills-lock.json
+.agents\skills\writing-technical-documentation

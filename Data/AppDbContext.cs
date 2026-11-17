@@ -3,7 +3,6 @@ using Nexus.Web.Models;
 
 namespace Nexus.Web.Data;
 
-/// <summary>EF Core context for the whole system (SQL Server 2022).</summary>
 public class AppDbContext : DbContext
 {
     public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
@@ -33,8 +32,7 @@ public class AppDbContext : DbContext
     public DbSet<OrderDocument> OrderDocuments => Set<OrderDocument>();
     public DbSet<SequenceCounter> Sequences => Set<SequenceCounter>();
 
-    // Money columns share one precision.
-    protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
+protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
     {
         configurationBuilder.Properties<decimal>().HavePrecision(18, 2);
     }
@@ -43,12 +41,10 @@ public class AppDbContext : DbContext
     {
         base.OnModelCreating(b);
 
-        // No cascading deletes anywhere: history must never vanish with a parent row.
-        foreach (var fk in b.Model.GetEntityTypes().SelectMany(e => e.GetForeignKeys()))
+foreach (var fk in b.Model.GetEntityTypes().SelectMany(e => e.GetForeignKeys()))
             fk.DeleteBehavior = DeleteBehavior.Restrict;
 
-        // Unique business keys.
-        b.Entity<City>().HasIndex(x => x.Code).IsUnique();
+b.Entity<City>().HasIndex(x => x.Code).IsUnique();
         b.Entity<AppUser>().HasIndex(x => x.Username).IsUnique();
         b.Entity<Employee>().HasIndex(x => x.UserId).IsUnique();
         b.Entity<Customer>().HasIndex(x => x.Phone);
@@ -59,12 +55,10 @@ public class AppDbContext : DbContext
         b.Entity<PurchaseOrder>().HasIndex(x => x.PoNumber).IsUnique();
         b.Entity<SecurityDepositRate>().HasIndex(x => x.ConnectionType).IsUnique();
 
-        // Searchable columns.
-        b.Entity<ServiceOrder>().HasIndex(x => x.PlacedOn);
+b.Entity<ServiceOrder>().HasIndex(x => x.PlacedOn);
         b.Entity<Connection>().HasIndex(x => x.ActivatedOn);
 
-        // Rates (per minute) need four decimals.
-        b.Entity<Plan>().Property(x => x.LocalRate).HasPrecision(18, 4);
+b.Entity<Plan>().Property(x => x.LocalRate).HasPrecision(18, 4);
         b.Entity<Plan>().Property(x => x.StdRate).HasPrecision(18, 4);
         b.Entity<Plan>().Property(x => x.MobileMsgRate).HasPrecision(18, 4);
         b.Entity<FeasibilityCheck>().Property(x => x.DistanceKm).HasPrecision(8, 2);
@@ -76,8 +70,7 @@ public class AppDbContext : DbContext
         b.Entity<Bill>().Property(x => x.StdMinutes).HasPrecision(12, 2);
         b.Entity<Bill>().Property(x => x.MobileMsgMinutes).HasPrecision(12, 2);
 
-        // Two relationships from Customer/User need explicit wiring.
-        b.Entity<Customer>().HasOne(c => c.User).WithMany().HasForeignKey(c => c.UserId);
+b.Entity<Customer>().HasOne(c => c.User).WithMany().HasForeignKey(c => c.UserId);
         b.Entity<Employee>().HasOne(e => e.User).WithMany().HasForeignKey(e => e.UserId);
         b.Entity<ServiceOrder>().HasOne(o => o.Plan).WithMany().HasForeignKey(o => o.PlanId);
         b.Entity<ServiceOrder>().HasOne(o => o.LandlinePlan).WithMany().HasForeignKey(o => o.LandlinePlanId);

@@ -8,7 +8,6 @@ using Nexus.Web.ViewModels;
 
 namespace Nexus.Web.Controllers;
 
-/// <summary>Bills. Only the accounts department generates them; everyone else with access reads them.</summary>
 public class BillingController : AppController
 {
     private readonly BillingService _billing;
@@ -45,7 +44,6 @@ public class BillingController : AppController
         return View(bill);
     }
 
-    /// <summary>Connections that need their next bill.</summary>
     [Authorize(Roles = Roles.Accounts)]
     public async Task<IActionResult> Pending(int page = 1)
     {
@@ -66,7 +64,6 @@ public class BillingController : AppController
         return View(vm);
     }
 
-    /// <summary>Two buttons: Preview recalculates, Generate saves. A bill cannot be edited once saved.</summary>
     [HttpPost, Authorize(Roles = Roles.Accounts)]
     public async Task<IActionResult> Generate(BillFormVm vm)
     {
@@ -109,7 +106,6 @@ public class BillingController : AppController
         return true;
     }
 
-    /// <summary>Works out the bill without saving it, using the same rules as generation.</summary>
     private async Task PreviewAsync(BillFormVm vm)
     {
         var c = vm.Connection;

@@ -7,7 +7,6 @@ using Nexus.Web.Services;
 
 namespace Nexus.Web.Controllers;
 
-/// <summary>Public pages: home with the rate card, the plan catalogue and the error page.</summary>
 [AllowAnonymous]
 public class HomeController : AppController
 {
@@ -17,7 +16,6 @@ public class HomeController : AppController
     {
         if (Me.IsAuthenticated) return RedirectToAction("Index", "Dashboard");
 
-        // The rate card on the home page is read straight from the plan table, so it is never out of date.
         var card = await Db.Plans.AsNoTracking()
             .Where(p => p.IsActive && p.ValidityMonths == 1 && p.Category != PlanCategory.Hourly)
             .OrderBy(p => p.ConnectionType).ThenBy(p => p.Price).ToListAsync();
@@ -26,7 +24,6 @@ public class HomeController : AppController
         return View(card);
     }
 
-    /// <summary>Plan catalogue, searchable by name.</summary>
     public async Task<IActionResult> Plans(string q)
     {
         var query = Db.Plans.AsNoTracking().Where(p => p.IsActive);

@@ -7,7 +7,6 @@ using Nexus.Web.ViewModels;
 
 namespace Nexus.Web.Controllers;
 
-/// <summary>Each role's start page: the things that role has to act on today.</summary>
 public class DashboardController : AppController
 {
     private static readonly OrderStatus[] OpenStatuses =
@@ -42,7 +41,6 @@ public class DashboardController : AppController
                     .Where(o => o.Status == OrderStatus.Placed || o.Status == OrderStatus.UnderFeasibilityCheck || o.Status == OrderStatus.Feasible)
                     .OrderBy(o => o.PlacedOn).Take(8).ToListAsync();
                 vm.Stock = await StockLinesAsync(onlyAttention: true);
-                // Connections with a bill past its due date: candidates for suspension.
                 vm.Connections = await Db.Connections.AsNoTracking().Include(c => c.Customer)
                     .Where(c => c.Status == ConnectionStatus.Active &&
                                 c.Bills.Any(b => !b.CarriedForward && b.Total > b.AmountPaid && b.DueDate < today))
@@ -77,7 +75,7 @@ public class DashboardController : AppController
                     .Where(o => o.RetailShopId == shopId).OrderByDescending(o => o.PlacedOn).Take(8).ToListAsync();
                 break;
 
-            default: // Customer
+            default:
                 var cid = Me.CustomerId ?? -1;
                 vm.Connections = await Db.Connections.AsNoTracking().Include(c => c.Plan).Include(c => c.City)
                     .Where(c => c.CustomerId == cid).OrderBy(c => c.AccountId).ToListAsync();
@@ -94,12 +92,10 @@ public class DashboardController : AppController
         return View(vm);
     }
 
-    /// <summary>Connections that have no bill covering today or later, so they are due for the next bill.</summary>
     public IQueryable<Connection> DueForBillingQuery(DateTime today) =>
         Db.Connections.Where(c => c.Status != ConnectionStatus.PermanentlyInactive &&
                                   !c.Bills.Any(b => b.PeriodEnd >= today));
 
-    /// <summary>Stock beside the orders still waiting for it. With onlyAttention, only low or short lines.</summary>
     private async Task<List<StockLine>> StockLinesAsync(bool onlyAttention)
     {
         var products = await Db.Products.AsNoTracking().Where(p => p.IsActive).OrderBy(p => p.Name).ToListAsync();

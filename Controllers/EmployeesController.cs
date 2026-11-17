@@ -9,7 +9,6 @@ using Nexus.Web.ViewModels;
 
 namespace Nexus.Web.Controllers;
 
-/// <summary>Employee records and logins. Maintained by the Admin alone.</summary>
 [Authorize(Roles = Roles.Admin)]
 public class EmployeesController : AppController
 {
@@ -75,7 +74,6 @@ public class EmployeesController : AppController
         var e = await Db.Employees.Include(x => x.User).FirstOrDefaultAsync(x => x.Id == id);
         if (e == null) return NotFound();
         if (await Db.Users.AnyAsync(u => u.Username == vm.Username && u.Id != e.UserId)) ModelState.AddModelError(nameof(vm.Username), "That username is taken");
-        // An Admin must not lock themselves out.
         if (e.UserId == Me.Id && (!vm.IsActive || vm.Role != Roles.Admin))
             ModelState.AddModelError("", "You cannot deactivate yourself or change your own role");
         if (!ModelState.IsValid) return View("Form", vm);

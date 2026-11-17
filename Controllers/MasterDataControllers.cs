@@ -8,10 +8,6 @@ using Nexus.Web.ViewModels;
 
 namespace Nexus.Web.Controllers;
 
-// ===========================================================================================
-// Master data screens. Each one: list with search, add, edit, delete (or retire when in use).
-// ===========================================================================================
-
 [Authorize(Roles = Roles.Admin)]
 public class ShopsController : AppController
 {
@@ -155,7 +151,6 @@ public class CitiesController : AppController
     {
         var m = await Db.Cities.AsNoTracking().FirstOrDefaultAsync(c => c.Id == id);
         if (m == null) return NotFound();
-        // Account ids already carry the code, so it is fixed once the city has connections.
         ViewBag.CodeLocked = await Db.Connections.AnyAsync(c => c.CityId == id);
         return View("Form", m);
     }
@@ -190,7 +185,6 @@ public class CitiesController : AppController
     }
 }
 
-/// <summary>Plans and tariffs: insert, update, delete and search, by the Admin.</summary>
 [Authorize(Roles = Roles.Admin)]
 public class PlansController : AppController
 {
@@ -252,7 +246,6 @@ public class PlansController : AppController
     }
 }
 
-/// <summary>Equipment and stock. Kept by the Admin and by the technical team.</summary>
 [Authorize(Roles = Roles.Admin + "," + Roles.Technical)]
 public class ProductsController : AppController
 {
@@ -266,7 +259,6 @@ public class ProductsController : AppController
         if (!string.IsNullOrWhiteSpace(q)) query = query.Where(p => p.Name.Contains(q) || p.Model.Contains(q));
         var products = await query.OrderBy(p => p.Category).ThenBy(p => p.Name).ToListAsync();
 
-        // Orders still waiting for each product, so stock can be read against demand.
         var open = new[] { OrderStatus.Placed, OrderStatus.UnderFeasibilityCheck, OrderStatus.Feasible };
         var demand = await Db.ServiceOrders.Where(o => o.ProductId != null && open.Contains(o.Status))
             .GroupBy(o => o.ProductId.Value).Select(g => new { Id = g.Key, Qty = g.Sum(x => x.Quantity) }).ToListAsync();

@@ -1,32 +1,21 @@
-// =====================================================================================
-// Nexus Service Marketing: theme
-// Bootstrap 5 is compiled from source with our own tokens, then the product's own
-// components are layered on top. Build:  npm run build:css  (see README)
-//
-// Direction: exact, ledger-like, industrial. The world is an exchange room: cable labels,
-// patch panels, service tickets. One accent (signal orange) used only for the main action
-// and for "live" state on the order wire. Everything else is graphite.
-// =====================================================================================
 
-// ---- Palette ----------------------------------------------------------------------
-$ink:        #14171B;   // graphite, sidebar and text
+$ink:        #14171B;
 $ink-2:      #1E2227;
 $ink-3:      #2A2F36;
 $graphite-700: #3A4047;
-$graphite-500: #646B74;   // muted text, passes 4.5:1 on white and on page
+$graphite-500: #646B74;
 $graphite-300: #A9AEB5;
 $line:       #DADDE1;
 $line-strong:#C3C8CE;
 $page:       #F2F3F4;
 $paper:      #FFFFFF;
-$signal:     #C2410C;   // the one accent
+$signal:     #C2410C;
 $signal-dark:#9F3509;
 $ok:         #2E7D52;
 $warn:       #96600F;
 $bad:        #B4413D;
 $info:       #3A6EA5;
 
-// ---- Bootstrap variable overrides ----------------------------------------------------
 $font-family-sans-serif: "Barlow", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
 $font-family-monospace:  "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 $font-size-base: 0.9375rem;
@@ -128,14 +117,12 @@ $transition-base: all 0.15s ease-out;
 @import "../node_modules/bootstrap/scss/helpers";
 @import "../node_modules/bootstrap/scss/utilities/api";
 
-// ---- Fonts (self-hosted, three weights of Barlow and two of Plex Mono) ---------------------
 @font-face { font-family: "Barlow"; font-weight: 400; font-style: normal; font-display: swap; src: url("../fonts/barlow-latin-400-normal.woff2") format("woff2"); }
 @font-face { font-family: "Barlow"; font-weight: 500; font-style: normal; font-display: swap; src: url("../fonts/barlow-latin-500-normal.woff2") format("woff2"); }
 @font-face { font-family: "Barlow"; font-weight: 600; font-style: normal; font-display: swap; src: url("../fonts/barlow-latin-600-normal.woff2") format("woff2"); }
 @font-face { font-family: "IBM Plex Mono"; font-weight: 400; font-style: normal; font-display: swap; src: url("../fonts/ibm-plex-mono-latin-400-normal.woff2") format("woff2"); }
 @font-face { font-family: "IBM Plex Mono"; font-weight: 500; font-style: normal; font-display: swap; src: url("../fonts/ibm-plex-mono-latin-500-normal.woff2") format("woff2"); }
 
-// ---- Tokens for our own components ------------------------------------------------------
 :root {
   --ink: #{$ink};
   --ink-2: #{$ink-2};
@@ -154,7 +141,6 @@ $transition-base: all 0.15s ease-out;
   --info: #{$info};
   --mono: #{$font-family-monospace};
   --sidebar: 248px;
-  // spacing scale: 4 8 12 16 24 32 48 64
   --s1: 4px; --s2: 8px; --s3: 12px; --s4: 16px; --s5: 24px; --s6: 32px; --s7: 48px; --s8: 64px;
 }
 
@@ -175,7 +161,6 @@ h1, h2, h3, h4 { text-wrap: balance; }
 .skip-link { position: absolute; left: var(--s3); top: -48px; background: var(--ink); color: #fff; padding: var(--s2) var(--s3); border-radius: 4px; z-index: 100; transition: top 0.15s; }
 .skip-link:focus { top: var(--s3); color: #fff; }
 
-// ---- The signature: ids set like cable labels ---------------------------------------------
 .idtag {
   display: inline-block; font-family: var(--mono); font-size: 0.8125em; font-weight: 500; letter-spacing: 0.01em;
   padding: 1px 7px 1px 7px; background: #E9ECEF; color: var(--ink); border-radius: 3px;
@@ -183,7 +168,6 @@ h1, h2, h3, h4 { text-wrap: balance; }
 }
 .idtag-lg { font-size: 1.05rem; padding: 3px 10px; border-left-width: 4px; }
 
-// ---- Status: a dot and a word ---------------------------------------------------------------
 .status { display: inline-flex; align-items: center; gap: 7px; white-space: nowrap; }
 .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; background: var(--faint); }
 .dot-green { background: var(--ok); }
@@ -194,7 +178,6 @@ h1, h2, h3, h4 { text-wrap: balance; }
 .dot-grey { background: var(--faint); border: 1.5px solid #8A9099; width: 9px; height: 9px; }
 .dot-muted { background: #D3D6DA; }
 
-// ---- Buttons ---------------------------------------------------------------------------------
 .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; line-height: 1.25; transition: background-color 0.15s, border-color 0.15s, color 0.15s, transform 0.12s; }
 .btn:active:not(:disabled) { transform: scale(0.97); }
 .btn-primary { --bs-btn-bg: var(--signal); --bs-btn-border-color: var(--signal); --bs-btn-hover-bg: var(--signal-dark); --bs-btn-hover-border-color: var(--signal-dark);
@@ -208,7 +191,6 @@ h1, h2, h3, h4 { text-wrap: balance; }
 .btn-link-plain:hover { text-decoration: underline; }
 .btn.is-busy { pointer-events: none; opacity: 0.75; }
 
-// ---- Forms -----------------------------------------------------------------------------------
 .form-label { font-size: 0.875rem; }
 .form-text, .hint { font-size: 0.8125rem; color: var(--muted); margin-top: 4px; }
 .form-control, .form-select { background-color: var(--paper); transition: border-color 0.15s; }
@@ -235,7 +217,6 @@ h1, h2, h3, h4 { text-wrap: balance; }
 .choice input:checked + label { background: var(--ink); border-color: var(--ink); color: #fff; }
 .choice input:focus-visible + label { outline: 2px solid var(--signal); outline-offset: 2px; }
 
-// ---- Panels, tables, key-value ----------------------------------------------------------------
 .panel { background: var(--paper); border: 1px solid var(--line); border-radius: 6px; }
 .panel + .panel, .panel + .row, .row + .panel { margin-top: var(--s5); }
 .panel-head { display: flex; align-items: center; justify-content: space-between; gap: var(--s4); padding: var(--s4) var(--s5); border-bottom: 1px solid var(--line); }
@@ -258,7 +239,6 @@ h1, h2, h3, h4 { text-wrap: balance; }
 .kv dt:nth-last-of-type(1), .kv dd:last-of-type { border-bottom: 0; }
 .kv-tight dt, .kv-tight dd { padding: 0.35rem 0; }
 
-// ---- Ledger figures (stats are a row of figures separated by hairlines, not cards) -----------------
 .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); background: var(--paper); border: 1px solid var(--line); border-radius: 6px; margin-bottom: var(--s5); }
 .stat { padding: var(--s4) var(--s5); border-right: 1px solid var(--line); min-width: 0; }
 .stat:last-child { border-right: 0; }
@@ -267,7 +247,6 @@ h1, h2, h3, h4 { text-wrap: balance; }
 .stat.is-alert .figure { color: var(--bad); }
 @include media-breakpoint-down(md) { .stats { grid-template-columns: minmax(0, 1fr); } .stat { border-right: 0; border-bottom: 1px solid var(--line); } .stat:last-child { border-bottom: 0; } }
 
-// ---- Order wire (the tracker) ---------------------------------------------------------------------
 .wire { display: flex; list-style: none; margin: 0; padding: 0; }
 .wire li { flex: 1; position: relative; padding: 32px var(--s4) 0 0; min-width: 0; }
 .wire li:nth-child(1) { --i: 0; } .wire li:nth-child(2) { --i: 1; } .wire li:nth-child(3) { --i: 2; } .wire li:nth-child(4) { --i: 3; }
@@ -291,7 +270,6 @@ h1, h2, h3, h4 { text-wrap: balance; }
   .wire li.is-done::after { background: var(--signal); animation: none; }
 }
 
-// ---- Timeline of connection events ---------------------------------------------------------------------
 .timeline { list-style: none; margin: 0; padding: 0; }
 .timeline li { position: relative; padding: 0 0 var(--s4) 24px; }
 .timeline li::before { content: ""; position: absolute; left: 3px; top: 7px; width: 8px; height: 8px; border-radius: 50%; background: var(--ink); }
@@ -299,7 +277,6 @@ h1, h2, h3, h4 { text-wrap: balance; }
 .timeline li:last-child::after { display: none; }
 .timeline .when { display: block; font-size: 0.8125rem; color: var(--muted); }
 
-// ---- Flash messages ---------------------------------------------------------------------------------------
 .flash-stack { position: fixed; z-index: 60; left: 50%; top: var(--s4); transform: translateX(-50%); width: min(560px, calc(100vw - 32px)); display: grid; gap: var(--s2); pointer-events: none; }
 .flash { pointer-events: auto; display: flex; gap: var(--s3); align-items: flex-start; background: var(--ink); color: #fff; border-radius: 6px; padding: var(--s3) var(--s4); animation: rise 0.22s ease-out both; }
 .flash.is-error { background: #7C2A27; }
@@ -309,7 +286,6 @@ h1, h2, h3, h4 { text-wrap: balance; }
 .flash.is-leaving { opacity: 0; transform: translateY(-6px); transition: opacity 0.2s, transform 0.2s; }
 @keyframes rise { from { opacity: 0; transform: translateY(-8px); } }
 
-// ---- Page furniture ----------------------------------------------------------------------------------------
 .page-head { display: flex; align-items: flex-end; justify-content: space-between; gap: var(--s4); flex-wrap: wrap; margin-bottom: var(--s5); }
 .page-title { font-size: 1.5rem; margin: 0; }
 .page-sub { color: var(--muted); margin: 4px 0 0; }
@@ -336,7 +312,6 @@ h1, h2, h3, h4 { text-wrap: balance; }
 .total-row td { font-weight: 600; border-top: 1px solid var(--ink) !important; }
 .rating { font-family: var(--mono); letter-spacing: 0.05em; }
 
-// ---- App shell ---------------------------------------------------------------------------------------------------
 .app { display: grid; grid-template-columns: var(--sidebar) minmax(0, 1fr); min-height: 100vh; }
 .sidebar { background: var(--ink); color: #C9CDD2; display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh; overflow-y: auto; padding: var(--s4) var(--s3); }
 .brand { display: flex; align-items: center; gap: 10px; color: #fff; font-weight: 600; font-size: 1.125rem; padding: var(--s2) var(--s2) var(--s4); letter-spacing: -0.01em; }
@@ -374,7 +349,6 @@ h1, h2, h3, h4 { text-wrap: balance; }
   .page { padding: var(--s5) var(--s4) var(--s7); }
 }
 
-// ---- Public pages --------------------------------------------------------------------------------------------------------
 .pub { background: var(--paper); min-height: 100vh; display: flex; flex-direction: column; }
 .pub-nav { border-bottom: 1px solid var(--line); }
 .pub-nav .inner { max-width: 1180px; margin: 0 auto; padding: var(--s3) var(--s5); display: flex; align-items: center; gap: var(--s5); }
@@ -432,14 +406,12 @@ h1, h2, h3, h4 { text-wrap: balance; }
   .lookup .row-in { flex-direction: column; }
 }
 
-// ---- Track result ---------------------------------------------------------------------------------------------------------------
 .track-head { padding: var(--s7) 0 var(--s5); }
 .track-fig { font-family: var(--mono); font-variant-numeric: tabular-nums; font-size: 2.6rem; font-weight: 500; line-height: 1; letter-spacing: -0.02em; }
 .track-fig.is-clear { color: var(--ok); }
 .track-fig.is-due { color: var(--ink); }
 .track-fig.is-overdue { color: var(--bad); }
 
-// ---- Login and register ------------------------------------------------------------------------------------------------------------
 .auth-split { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); min-height: 100vh; }
 .auth-side { background: var(--ink); color: #C9CDD2; padding: var(--s7); display: flex; flex-direction: column; justify-content: space-between; }
 .auth-side .brand { padding: 0; }
@@ -452,7 +424,6 @@ h1, h2, h3, h4 { text-wrap: balance; }
 @keyframes shake { 20% { transform: translateX(-5px); } 45% { transform: translateX(5px); } 70% { transform: translateX(-3px); } 90% { transform: translateX(2px); } }
 @include media-breakpoint-down(lg) { .auth-split { grid-template-columns: 1fr; } .auth-side { display: none; } .auth-form { padding: var(--s6) var(--s4); align-items: flex-start; } }
 
-// ---- Order form helpers ----------------------------------------------------------------------------------------------------------------
 .cost-box { border: 1px solid var(--line); border-radius: 6px; padding: var(--s4) var(--s5); background: #FAFAFB; }
 .cost-box .line { display: flex; justify-content: space-between; gap: var(--s4); padding: 4px 0; }
 .cost-box .line span:last-child { font-family: var(--mono); font-variant-numeric: tabular-nums; }
@@ -460,7 +431,6 @@ h1, h2, h3, h4 { text-wrap: balance; }
 .line-row { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 1fr) minmax(0, 1fr) auto; gap: var(--s3); align-items: end; margin-bottom: var(--s3); }
 @include media-breakpoint-down(md) { .line-row { grid-template-columns: 1fr 1fr; } .line-row > :first-child { grid-column: span 2; } }
 
-// ---- Bill / receipt document -------------------------------------------------------------------------------------------------------------
 .doc { background: var(--paper); border: 1px solid var(--line); border-radius: 6px; padding: var(--s6); max-width: 820px; }
 .doc-head { display: flex; justify-content: space-between; gap: var(--s5); flex-wrap: wrap; padding-bottom: var(--s5); border-bottom: 2px solid var(--ink); margin-bottom: var(--s5); }
 .doc-lines { width: 100%; }
@@ -469,11 +439,9 @@ h1, h2, h3, h4 { text-wrap: balance; }
 .doc-lines tr.sub td { color: var(--muted); padding-left: var(--s4); font-size: 0.875rem; }
 .doc-lines tr.grand td { font-weight: 600; font-size: 1.125rem; border-top: 2px solid var(--ink); border-bottom: 0; padding-top: var(--s3); }
 
-// ---- Modal --------------------------------------------------------------------------------------------------------------------------------
 .modal-title { font-size: 1.0625rem; }
 .modal-footer { gap: var(--s2); }
 
-// ---- Print: bills and receipts print clean ---------------------------------------------------------------------------------------------------
 @media print {
   body { background: #fff; }
   .sidebar, .topbar-mobile, .page-actions, .back-link, .flash-stack, .no-print, .nav-backdrop { display: none !important; }
@@ -486,7 +454,6 @@ h1, h2, h3, h4 { text-wrap: balance; }
   *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
 }
 
-// ---- Small helpers used by views (no inline styles, so the CSP can stay strict) ------------
 .py-plans { padding-top: var(--s7); padding-bottom: var(--s8); }
 .fig-sm { font-size: 1.1rem !important; line-height: 1.7 !important; }
 .doc-brand { font-weight: 600; font-size: 1.25rem; letter-spacing: -0.01em; }

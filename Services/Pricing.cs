@@ -2,7 +2,6 @@ using Nexus.Web.Models;
 
 namespace Nexus.Web.Services;
 
-/// <summary>Keys for AppSetting rows, with the defaults taken from the specification.</summary>
 public static class SettingKeys
 {
     public const string TaxPercent = "Billing.TaxPercent";
@@ -13,7 +12,7 @@ public static class SettingKeys
 
     public static readonly Dictionary<string, string> Defaults = new()
     {
-        { TaxPercent, "12.24" },    // service tax, on the whole bill
+        { TaxPercent, "12.24" },
         { DueDays, "15" },
         { MaxKmLandline, "5" },
         { MaxKmBroadband, "8" },
@@ -21,7 +20,6 @@ public static class SettingKeys
     };
 }
 
-/// <summary>Everything a bill is calculated from.</summary>
 public sealed class BillInput
 {
     public decimal PlanCharge { get; init; }
@@ -52,12 +50,10 @@ public sealed class BillResult
     public decimal Total { get; init; }
 }
 
-/// <summary>Pure pricing rules. No database access, so they are easy to test.</summary>
-public static class Pricing
-{
+    public static class Pricing
+    {
     public static decimal Round(decimal v) => Math.Round(v, 2, MidpointRounding.AwayFromZero);
 
-    /// <summary>Bulk discount for a number of connections. Highest matching tier wins; no match means 0.</summary>
     public static decimal DiscountFor(int connections, IEnumerable<DiscountScheme> schemes)
     {
         var match = schemes
@@ -67,15 +63,9 @@ public static class Pricing
         return match?.Percent ?? 0m;
     }
 
-    /// <summary>Deposit actually held after discount.</summary>
     public static decimal NetDeposit(decimal gross, decimal discountPercent) =>
         Round(gross - gross * discountPercent / 100m);
 
-    /// <summary>
-    /// Bill = rental + call charges + replacement charges + (first bill only: deposit) - (first bill only: discount)
-    /// Tax is charged on that whole amount. Earlier unpaid balances are added afterwards, untaxed,
-    /// because they were taxed when first billed.
-    /// </summary>
     public static BillResult ComputeBill(BillInput i)
     {
         var usage = Round(i.LocalMinutes * (i.LocalRate ?? 0m)
@@ -109,13 +99,8 @@ public static class Pricing
         paid <= 0 ? BillStatus.Unpaid : paid >= total ? BillStatus.Paid : BillStatus.PartiallyPaid;
 }
 
-/// <summary>Feasibility rules: distance from the exchange, and server availability for internet.</summary>
-public static class FeasibilityRules
-{
-    /// <summary>
-    /// What has to be checked for an order. Dial-up needs a landline, so unless the customer
-    /// already holds one with Nexus, both the landline and the internet are checked.
-    /// </summary>
+    public static class FeasibilityRules
+    {
     public static List<FeasibilitySubject> Required(ConnectionType type, bool hasExistingLandline)
     {
         return type switch
@@ -128,7 +113,7 @@ public static class FeasibilityRules
         };
     }
 
-    public static (bool Feasible, string Reason) Evaluate(
+        public static (bool Feasible, string Reason) Evaluate(
         FeasibilitySubject subject, decimal distanceKm, bool serverAvailable, decimal maxKm)
     {
         if (distanceKm > maxKm)
@@ -138,7 +123,6 @@ public static class FeasibilityRules
         return (true, "Within distance limit" + (subject == FeasibilitySubject.Internet ? " and server available" : ""));
     }
 
-    /// <summary>Order status from the latest check of each required subject.</summary>
     public static OrderStatus Resolve(IEnumerable<FeasibilitySubject> required, IEnumerable<FeasibilityCheck> latestPerSubject)
     {
         var latest = latestPerSubject.ToList();

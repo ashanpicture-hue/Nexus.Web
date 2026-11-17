@@ -8,7 +8,6 @@ using Nexus.Web.ViewModels;
 
 namespace Nexus.Web.Controllers;
 
-/// <summary>Customer records. Staff look them up; retail and admin register and edit them; customers edit their own contact details.</summary>
 public class CustomersController : AppController
 {
     public CustomersController(AppDbContext db, CurrentUser me) : base(db, me) { }
@@ -27,7 +26,6 @@ public class CustomersController : AppController
         return View(await Paged<Customer>.CreateAsync(query.OrderBy(c => c.FullName), page));
     }
 
-    /// <summary>First step of a walk-in order: find the customer by phone or name, or add a new one.</summary>
     [Authorize(Roles = Roles.Retail)]
     public async Task<IActionResult> Pick(string q)
     {
@@ -45,7 +43,6 @@ public class CustomersController : AppController
     {
         var c = await Db.Customers.AsNoTracking().Include(x => x.City).Include(x => x.User).FirstOrDefaultAsync(x => x.Id == id);
         if (c == null) return NotFound();
-        // Retail staff see only the orders and connections from their own shop.
         ViewBag.Orders = await Db.ServiceOrders.AsNoTracking().ForUser(Me).Include(o => o.Plan)
             .Where(o => o.CustomerId == id).OrderByDescending(o => o.PlacedOn).ToListAsync();
         ViewBag.Connections = await Db.Connections.AsNoTracking().ForUser(Me).Include(x => x.Plan)
@@ -93,7 +90,6 @@ public class CustomersController : AppController
         await Db.SaveChangesAsync();
 
         Flash("Customer saved");
-        // Retail staff go straight on to the order.
         if (Me.Role == Roles.Retail) return RedirectToAction("New", "Orders", new { customerId = customer.Id });
         return RedirectToAction(nameof(Details), new { id = customer.Id });
     }
@@ -121,7 +117,6 @@ public class CustomersController : AppController
         return RedirectToAction(nameof(Details), new { id });
     }
 
-    /// <summary>A customer's own contact details.</summary>
     [Authorize(Roles = Roles.Customer)]
     public async Task<IActionResult> Profile()
     {
@@ -158,7 +153,6 @@ public class CustomersController : AppController
             ModelState.AddModelError(nameof(vm.CompanyName), "Enter the company name");
         if (NormalizePhone(vm.Phone).Length < 7)
             ModelState.AddModelError(nameof(vm.Phone), "Enter a phone number with at least 7 digits");
-        // Customers cannot change their account type or ID proof; keep the checks cheap and shared.
         return Task.CompletedTask;
     }
 

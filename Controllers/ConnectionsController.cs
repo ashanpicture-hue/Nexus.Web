@@ -8,7 +8,6 @@ using Nexus.Web.ViewModels;
 
 namespace Nexus.Web.Controllers;
 
-/// <summary>Connections: everyone sees what their role allows; the technical team changes status, plan and equipment.</summary>
 public class ConnectionsController : AppController
 {
     private readonly ConnectionService _svc;
@@ -33,7 +32,6 @@ public class ConnectionsController : AppController
         ViewBag.Status = status; ViewBag.Type = type; ViewBag.Q = q;
         var paged = await Paged<Connection>.CreateAsync(query.OrderBy(c => c.AccountId), page);
 
-        // Amount due per connection on this page, in one query.
         var ids = paged.Items.Select(c => c.Id).ToList();
         var bills = await Db.Bills.AsNoTracking().Where(b => ids.Contains(b.ConnectionId) && !b.CarriedForward).ToListAsync();
         ViewBag.Due = bills.GroupBy(b => b.ConnectionId).ToDictionary(g => g.Key, g => g.Sum(b => b.Total - b.AmountPaid));

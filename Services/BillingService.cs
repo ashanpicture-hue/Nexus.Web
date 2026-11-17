@@ -14,7 +14,6 @@ public class GenerateBillRequest
     public string Notes { get; set; }
 }
 
-/// <summary>Bill generation (accounts department only) and payments.</summary>
 public class BillingService
 {
     private readonly AppDbContext _db;
@@ -26,7 +25,6 @@ public class BillingService
         _db = db; _seq = seq; _settings = settings;
     }
 
-    /// <summary>Unpaid balance on a connection, counting only bills not yet carried into a later bill.</summary>
     public async Task<decimal> OutstandingAsync(int connectionId)
     {
         var bills = await _db.Bills.AsNoTracking()
@@ -34,7 +32,6 @@ public class BillingService
         return bills.Sum(b => b.Total - b.AmountPaid);
     }
 
-    /// <summary>The start date the next bill should have: the day after the last period, or the activation date.</summary>
     public async Task<DateTime> NextPeriodStartAsync(int connectionId)
     {
         var last = await _db.Bills.AsNoTracking().Where(b => b.ConnectionId == connectionId)
@@ -64,7 +61,6 @@ public class BillingService
         var openBills = c.Bills.Where(b => !b.CarriedForward && b.Total - b.AmountPaid > 0).ToList();
         var unbilled = c.Charges.Where(x => x.BilledOnBillId == null).ToList();
 
-        // Call charges only apply to landline plans, which carry per-minute rates.
         var plan = c.Plan;
         var calc = Pricing.ComputeBill(new BillInput
         {
@@ -128,11 +124,7 @@ public class BillingService
         return (bill, null);
     }
 
-    /// <summary>
-    /// Records a payment against a bill. Retail employees pass their shop id; accounts staff
-    /// receiving money at the city office pass null.
-    /// </summary>
-    public async Task<(Payment Payment, string Error)> PayAsync(int billId, decimal amount, PaymentMode mode,
+public async Task<(Payment Payment, string Error)> PayAsync(int billId, decimal amount, PaymentMode mode,
         string reference, DateTime paidOn, int userId, int? shopId)
     {
         var bill = await _db.Bills.FirstOrDefaultAsync(b => b.Id == billId);

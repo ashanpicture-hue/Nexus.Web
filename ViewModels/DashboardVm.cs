@@ -2,13 +2,11 @@ using Nexus.Web.Models;
 
 namespace Nexus.Web.ViewModels;
 
-/// <summary>One class for every role's start page. Each role fills in only its own part.</summary>
 public class DashboardVm
 {
     public string Role { get; set; }
     public string ShopName { get; set; }
 
-    // Counters
     public int OpenOrders { get; set; }
     public int ActiveConnections { get; set; }
     public int Employees { get; set; }
@@ -22,7 +20,6 @@ public class DashboardVm
     public decimal CollectedToday { get; set; }
     public decimal DueNow { get; set; }
 
-    // Lists
     public List<ServiceOrder> Orders { get; set; } = new();
     public List<Connection> Connections { get; set; } = new();
     public List<Bill> Bills { get; set; } = new();
@@ -32,7 +29,6 @@ public class DashboardVm
     public Dictionary<int, decimal> DueByConnection { get; set; } = new();
 }
 
-/// <summary>Stock against the orders still waiting for equipment.</summary>
 public class StockLine
 {
     public Product Product { get; set; }

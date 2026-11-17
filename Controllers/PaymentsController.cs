@@ -8,7 +8,6 @@ using Nexus.Web.ViewModels;
 
 namespace Nexus.Web.Controllers;
 
-/// <summary>Payments against bills. Taken by retail employees at their shop and by the accounts department at the city office.</summary>
 public class PaymentsController : AppController
 {
     private readonly BillingService _billing;
@@ -22,7 +21,6 @@ public class PaymentsController : AppController
         return View(await Paged<Payment>.CreateAsync(query.OrderByDescending(p => p.PaidOn).ThenByDescending(p => p.Id), page));
     }
 
-    /// <summary>From an account id (as read from the customer's bill) to the bill that is owed.</summary>
     [Authorize(Roles = Roles.Retail + "," + Roles.Accounts)]
     public async Task<IActionResult> Find(string accountId)
     {
@@ -61,7 +59,6 @@ public class PaymentsController : AppController
         ViewBag.Bill = bill;
         if (!ModelState.IsValid) return View(vm);
 
-        // Retail takes money in the shop; accounts staff take it at the city office (no shop).
         int? shop = Me.Role == Roles.Retail ? Me.ShopId : null;
         var (payment, err) = await _billing.PayAsync(vm.BillId, vm.Amount, vm.Mode, vm.Reference, vm.PaidOn, Me.Id, shop);
         if (err != null)

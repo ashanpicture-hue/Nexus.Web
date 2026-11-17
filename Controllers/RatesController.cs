@@ -8,7 +8,6 @@ using Nexus.Web.ViewModels;
 
 namespace Nexus.Web.Controllers;
 
-/// <summary>Security deposits, bulk discount tiers, service tax and feasibility limits.</summary>
 [Authorize(Roles = Roles.Admin)]
 public class RatesController : AppController
 {
@@ -69,7 +68,6 @@ public class RatesController : AppController
     {
         if (m.MaxConnections != null && m.MaxConnections < m.MinConnections)
             ModelState.AddModelError(nameof(m.MaxConnections), "Upper limit cannot be below the lower limit");
-        // Tiers must not overlap, or one order could match two discounts.
         var others = await Db.DiscountSchemes.Where(s => s.Id != id).ToListAsync();
         var max = m.MaxConnections ?? int.MaxValue;
         if (others.Any(s => m.MinConnections <= (s.MaxConnections ?? int.MaxValue) && s.MinConnections <= max))

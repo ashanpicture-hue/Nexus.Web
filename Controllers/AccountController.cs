@@ -11,7 +11,6 @@ using Nexus.Web.ViewModels;
 
 namespace Nexus.Web.Controllers;
 
-/// <summary>Sign in, sign out, customer self-registration and password change.</summary>
 public class AccountController : AppController
 {
     private const int MaxFailures = 5;
@@ -34,7 +33,6 @@ public class AccountController : AppController
         var username = vm.Username.Trim();
         var user = await Db.Users.FirstOrDefaultAsync(u => u.Username == username);
 
-        // Same message for "no such user" and "wrong password" so usernames cannot be probed.
         const string generic = "Username or password is not right";
         if (user == null || !user.IsActive)
         {
@@ -104,7 +102,6 @@ public class AccountController : AppController
         return View(new RegisterVm { Cities = await CityOptionsAsync() });
     }
 
-    /// <summary>Customers sign themselves up. Staff accounts are only ever created by the Admin.</summary>
     [HttpPost, AllowAnonymous]
     public async Task<IActionResult> Register(RegisterVm vm)
     {

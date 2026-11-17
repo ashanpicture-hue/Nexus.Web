@@ -6,7 +6,6 @@ using Nexus.Web.Models;
 
 namespace Nexus.Web.Services;
 
-/// <summary>Reads the signed-in person from the cookie claims.</summary>
 public class CurrentUser
 {
     private readonly IHttpContextAccessor _accessor;
@@ -23,7 +22,6 @@ public class CurrentUser
     public bool Is(params string[] roles) => Role != null && roles.Contains(Role);
 }
 
-/// <summary>Password hashing with PBKDF2-SHA256 and a random salt per password.</summary>
 public static class PasswordTool
 {
     private const int Iterations = 120_000;
@@ -46,7 +44,6 @@ public static class PasswordTool
         return CryptographicOperations.FixedTimeEquals(actual, expected);
     }
 
-    /// <summary>At least 8 characters with a letter and a digit.</summary>
     public static string Check(string password)
     {
         if (string.IsNullOrEmpty(password) || password.Length < 8) return "Password needs at least 8 characters";
@@ -55,7 +52,6 @@ public static class PasswordTool
     }
 }
 
-/// <summary>Typed access to AppSetting rows with specification defaults.</summary>
 public class SettingsService
 {
     private readonly AppDbContext _db;
@@ -86,11 +82,6 @@ public class SettingsService
     }
 }
 
-/// <summary>
-/// Serial numbers for order ids, account ids, bills, receipts and so on.
-/// Each call uses its own short-lived context so a counter is committed immediately,
-/// and a row-version check makes two simultaneous callers retry instead of sharing a number.
-/// </summary>
 public class SequenceService
 {
     private readonly DbContextOptions<AppDbContext> _options;
@@ -116,7 +107,6 @@ public class SequenceService
             }
             catch (DbUpdateException)
             {
-                // Someone else took this number first. Try again with fresh data.
                 await Task.Delay(15 * (attempt + 1));
             }
         }
@@ -137,11 +127,6 @@ public class SequenceService
     public async Task<string> EmployeeNoAsync() => $"EMP-{await NextAsync("EMP"):D4}";
 }
 
-/// <summary>
-/// Stores uploaded paperwork under App_Data/filing/{year}/{cityCode}/{orderNo}/ so records
-/// are filed by year and area. Files live outside wwwroot and are only served through a
-/// controller that checks the caller's rights.
-/// </summary>
 public class FileStore
 {
     public const long MaxBytes = 5 * 1024 * 1024;
@@ -154,7 +139,6 @@ public class FileStore
         _root = Path.GetFullPath(Path.Combine(env.ContentRootPath, configured));
     }
 
-    /// <summary>Returns an error message, or null when the file is acceptable.</summary>
     public static async Task<string> ValidateAsync(IFormFile file)
     {
         if (file == null || file.Length == 0) return null;
@@ -162,7 +146,6 @@ public class FileStore
         var ext = Path.GetExtension(file.FileName).ToLowerInvariant();
         if (!AllowedExtensions.Contains(ext)) return $"{file.FileName}: use a PDF, JPG or PNG file";
 
-        // Check the first bytes so a renamed program cannot slip through.
         var head = new byte[4];
         using (var s = file.OpenReadStream())
         {
@@ -189,7 +172,6 @@ public class FileStore
         return relative.Replace('\\', '/');
     }
 
-    /// <summary>Opens a stored file. Returns null if the path escapes the filing root or is missing.</summary>
     public Stream Open(string relativePath)
     {
         var full = Path.GetFullPath(Path.Combine(_root, relativePath));
@@ -205,7 +187,6 @@ public class FileStore
     };
 }
 
-/// <summary>Limits lists to what the signed-in person may see. Admin, Technical and Accounts see everything.</summary>
 public static class Scoping
 {
     public static IQueryable<ServiceOrder> ForUser(this IQueryable<ServiceOrder> q, CurrentUser u)
