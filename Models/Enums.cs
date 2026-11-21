@@ -8,7 +8,7 @@ public static class Roles
     public const string Accounts = "Accounts";
     public const string Technical = "Technical";
     public const string Retail = "Retail";
-    public const string Customer = "Customer"
+    public const string Customer = "Customer";
 
     public const string Staff = "Admin,Accounts,Technical,Retail";
     public static readonly string[] EmployeeRoles = { Admin, Accounts, Technical, Retail };
